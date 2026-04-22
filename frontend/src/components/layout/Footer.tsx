@@ -12,6 +12,7 @@ const quickLinks = [
   { key: 'gallery', href: '/gallery' },
   { key: 'careers', href: '/careers' },
   { key: 'contact', href: '/contact' },
+  { key: 'faq', href: '/faq' },
 ];
 
 export default function Footer({ locale }: { locale: string }) {

@@ -18,6 +18,7 @@ const navLinks = [
   { key: 'journey', href: '/journey' },
   { key: 'careers', href: '/careers' },
   { key: 'contact', href: '/contact' },
+  { key: 'faq', href: '/faq' },
 ];
 
 export default function Header({ locale }: { locale: string }) {
@@ -111,10 +112,10 @@ export default function Header({ locale }: { locale: string }) {
             <button
               type="button"
               onClick={switchLocale}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              className="inline-flex h-9 items-center justify-center rounded-full px-3 text-xs font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
               title={locale === 'ar' ? 'English' : 'العربية'}
             >
-              {locale === 'ar' ? 'EN' : 'ع'}
+              {locale === 'ar' ? 'English' : 'العربية'}
             </button>
 
             {/* Divider */}

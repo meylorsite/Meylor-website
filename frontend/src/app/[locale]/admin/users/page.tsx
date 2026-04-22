@@ -8,7 +8,7 @@ export default function AdminUsers() {
       title="Users"
       fields={[
         { key: 'email', label: 'Email', required: true, showInTable: true },
-        { key: 'password', label: 'Password', required: true },
+        { key: 'password', label: 'Password', required: true, showInTable: false },
         { key: 'nameEn', label: 'Name (English)', showInTable: true },
         { key: 'nameAr', label: 'Name (Arabic)' },
         { key: 'role', label: 'Role', type: 'select', options: [

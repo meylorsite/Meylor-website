@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Settings, FileText, GraduationCap, Building2,
   MessageSquare, Image as ImageIcon, Route, DollarSign, Briefcase, Mail,
   AlertTriangle, Users, Newspaper, BarChart3, LogOut, Menu, X, ChevronDown, User,
-  ClipboardList, BookOpen, Home
+  ClipboardList, BookOpen, Home, HelpCircle
 } from 'lucide-react';
 
 const adminLinks = [
@@ -32,6 +32,7 @@ const adminLinks = [
   { key: 'Contacts', icon: Mail, href: '/contacts' },
   { key: 'Complaints', icon: AlertTriangle, href: '/complaints' },
   { key: 'Newsletter', icon: Newspaper, href: '/newsletter' },
+  { key: 'FAQs', icon: HelpCircle, href: '/faqs' },
   { key: 'Users', icon: Users, href: '/users' },
 ];
 

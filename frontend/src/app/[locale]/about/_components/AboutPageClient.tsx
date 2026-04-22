@@ -10,19 +10,19 @@ import { Eye, Target, Heart, Award, BookOpen, Users, GraduationCap, Star, Shield
 const icons: Record<string, any> = { vision: Eye, mission: Target, values: Heart };
 
 const fallbackBoard = [
-  { nameEn: 'Dr. Ahmad Al-Rashidi', nameAr: 'د. أحمد الرشيدي', roleEn: 'Chairman of the Board', roleAr: 'رئيس مجلس الإدارة', imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Mrs. Fatima Hassan', nameAr: 'أ. فاطمة حسن', roleEn: 'Vice Chairwoman', roleAr: 'نائبة الرئيس', imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Mr. Khalid Al-Otaibi', nameAr: 'أ. خالد العتيبي', roleEn: 'Board Member', roleAr: 'عضو مجلس الإدارة', imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Dr. Sarah Al-Zahrani', nameAr: 'د. سارة الزهراني', roleEn: 'Board Member', roleAr: 'عضوة مجلس الإدارة', imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&h=300&fit=crop&crop=face' },
+  { nameEn: 'Dr. Ahmad Al-Rashidi', nameAr: 'د. أحمد الرشيدي', roleEn: 'Chairman of the Board', roleAr: 'رئيس مجلس الإدارة', imageUrl: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Mrs. Fatima Hassan', nameAr: 'أ. فاطمة حسن', roleEn: 'Vice Chairwoman', roleAr: 'نائبة الرئيس', imageUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Mr. Khalid Al-Otaibi', nameAr: 'أ. خالد العتيبي', roleEn: 'Board Member', roleAr: 'عضو مجلس الإدارة', imageUrl: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Dr. Sarah Al-Zahrani', nameAr: 'د. سارة الزهراني', roleEn: 'Board Member', roleAr: 'عضوة مجلس الإدارة', imageUrl: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=400' },
 ];
 
 const fallbackTeam = [
-  { nameEn: 'Mr. Omar Badr', nameAr: 'أ. عمر بدر', roleEn: 'School Principal', roleAr: 'مدير المدرسة', imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Mrs. Layla Mansour', nameAr: 'أ. ليلى منصور', roleEn: 'Vice Principal - Academics', roleAr: 'نائبة المدير - الشؤون الأكاديمية', imageUrl: 'https://images.unsplash.com/photo-1594824476967-48c8b964ac31?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Mr. Faisal Al-Harbi', nameAr: 'أ. فيصل الحربي', roleEn: 'Vice Principal - Operations', roleAr: 'نائب المدير - العمليات', imageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Mrs. Nora Al-Qahtani', nameAr: 'أ. نورة القحطاني', roleEn: 'Head of Student Affairs', roleAr: 'رئيسة شؤون الطلاب', imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Dr. Rami Tawfiq', nameAr: 'د. رامي توفيق', roleEn: 'Head of Curriculum', roleAr: 'رئيس المناهج', imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop&crop=face' },
-  { nameEn: 'Mrs. Hana Al-Shehri', nameAr: 'أ. هناء الشهري', roleEn: 'Head of Admissions', roleAr: 'رئيسة القبول والتسجيل', imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face' },
+  { nameEn: 'Mr. Omar Badr', nameAr: 'أ. عمر بدر', roleEn: 'School Principal', roleAr: 'مدير المدرسة', imageUrl: 'https://images.pexels.com/photos/2182975/pexels-photo-2182975.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Mrs. Layla Mansour', nameAr: 'أ. ليلى منصور', roleEn: 'Vice Principal - Academics', roleAr: 'نائبة المدير - الشؤون الأكاديمية', imageUrl: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Mr. Faisal Al-Harbi', nameAr: 'أ. فيصل الحربي', roleEn: 'Vice Principal - Operations', roleAr: 'نائب المدير - العمليات', imageUrl: 'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Mrs. Nora Al-Qahtani', nameAr: 'أ. نورة القحطاني', roleEn: 'Head of Student Affairs', roleAr: 'رئيسة شؤون الطلاب', imageUrl: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Dr. Rami Tawfiq', nameAr: 'د. رامي توفيق', roleEn: 'Head of Curriculum', roleAr: 'رئيس المناهج', imageUrl: 'https://images.pexels.com/photos/936229/pexels-photo-936229.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { nameEn: 'Mrs. Hana Al-Shehri', nameAr: 'أ. هناء الشهري', roleEn: 'Head of Admissions', roleAr: 'رئيسة القبول والتسجيل', imageUrl: 'https://images.pexels.com/photos/1181391/pexels-photo-1181391.jpeg?auto=compress&cs=tinysrgb&w=400' },
 ];
 
 const coreValues = [
@@ -144,7 +144,7 @@ export default function AboutPageClient({ sections, boardMembers = [], teamMembe
             >
               <div className="relative overflow-hidden rounded-2xl">
                 <Image
-                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=700&q=80"
+                  src="https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg?auto=compress&cs=tinysrgb&w=1200"
                   alt="MEYLOR School"
                   width={700}
                   height={500}

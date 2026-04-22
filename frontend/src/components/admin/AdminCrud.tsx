@@ -453,15 +453,36 @@ export default function AdminCrud({
             ) : (
               items.map((item) => (
                 <tr key={item._id} className="border-b border-gray-50 hover:bg-gray-50">
-                  {tableFields.map((f) => (
-                    <td key={f.key} className="max-w-[200px] truncate px-4 py-3 text-gray-700">
-                      {f.bilingual
-                        ? item[`${f.key}En`] || item[`${f.key}Ar`]
-                        : f.type === 'boolean'
-                        ? (item[f.key] ? '✓' : '✗')
-                        : String(item[f.key] ?? '')}
-                    </td>
-                  ))}
+                  {tableFields.map((f) => {
+                    let display: any = '';
+                    if (f.bilingual) {
+                      display = item[`${f.key}En`] || item[`${f.key}Ar`] || '';
+                    } else if (f.type === 'boolean') {
+                      display = item[f.key] ? '✓' : '✗';
+                    } else if (f.type === 'date' || /At$|date$/i.test(f.key)) {
+                      const v = item[f.key];
+                      if (v) {
+                        const d = new Date(v);
+                        display = isNaN(d.getTime()) ? String(v) : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                      }
+                    } else {
+                      const v = item[f.key];
+                      // Auto-detect ISO date strings
+                      if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
+                        const d = new Date(v);
+                        display = isNaN(d.getTime()) ? v : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                      } else {
+                        display = String(v ?? '');
+                      }
+                    }
+                    // Mask password column entirely
+                    if (f.key === 'password') display = '••••••••';
+                    return (
+                      <td key={f.key} className="max-w-[200px] truncate px-4 py-3 text-gray-700">
+                        {display}
+                      </td>
+                    );
+                  })}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
                       {'isVisible' in item || 'isPublished' in item || 'isOpen' in item ? (

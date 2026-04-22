@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronLeft, ChevronRight, Package, FileText, User, GraduationCap, ClipboardCheck, Loader2, CheckCircle, Star } from 'lucide-react';
 import { publicApi } from '@/lib/api';
@@ -308,7 +308,15 @@ function StepParentInfo({
           {errors.relationship && <p className="mt-1 text-xs text-red-500">{errors.relationship}</p>}
         </div>
         <FieldInput label={isRTL ? 'الجنسية' : 'Nationality'} value={data.nationality} onChange={(v) => onChange('nationality', v)} error={errors.nationality} required />
-        <FieldInput label={isRTL ? 'رقم الهوية / الإقامة' : 'National ID / Iqama Number'} value={data.nationalId} onChange={(v) => onChange('nationalId', v)} error={errors.nationalId} required dir="ltr" />
+        <FieldInput
+          label={isRTL ? 'رقم الهوية / الإقامة' : 'National ID / Iqama Number'}
+          value={data.nationalId}
+          onChange={(v) => onChange('nationalId', v)}
+          error={errors.nationalId}
+          dir="ltr"
+          hint={isRTL ? '(اختياري)' : '(optional)'}
+          placeholder={isRTL ? 'الهوية / الإقامة (اختياري)' : 'National ID / Iqama (optional)'}
+        />
       </div>
     </div>
   );
@@ -480,6 +488,8 @@ function FieldInput({
   type = 'text',
   required = false,
   dir,
+  placeholder,
+  hint,
 }: {
   label: string;
   value: string;
@@ -488,11 +498,14 @@ function FieldInput({
   type?: string;
   required?: boolean;
   dir?: string;
+  placeholder?: string;
+  hint?: string;
 }) {
   return (
     <div>
       <label className="mb-1 block text-sm font-medium text-gray-700">
         {label} {required && <span className="text-red-500">*</span>}
+        {hint && <span className="ms-1 text-xs font-normal text-gray-400">{hint}</span>}
       </label>
       <input
         type={type}
@@ -500,6 +513,7 @@ function FieldInput({
         onChange={(e) => onChange(e.target.value)}
         className={`input-field ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`}
         dir={dir}
+        placeholder={placeholder}
       />
       {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
@@ -540,6 +554,7 @@ function SuccessScreen({ isRTL, onReset }: { isRTL: boolean; onReset: () => void
 export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; locale: string }) {
   const isRTL = locale === 'ar';
   const accessToken = useAuthStore((s) => s.accessToken);
+  const user = useAuthStore((s) => s.user);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
@@ -553,13 +568,26 @@ export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; l
 
   // Step 3
   const [parentInfo, setParentInfo] = useState<ParentInfo>({
-    parentName: '',
-    email: '',
-    phone: '',
+    parentName: user?.nameEn || user?.nameAr || '',
+    email: user?.email || '',
+    phone: (user as any)?.phone || '',
     relationship: '',
-    nationality: '',
-    nationalId: '',
+    nationality: (user as any)?.nationality || '',
+    nationalId: (user as any)?.nationalId || '',
   });
+
+  useEffect(() => {
+    if (user) {
+      setParentInfo((prev) => ({
+        ...prev,
+        parentName: prev.parentName || user.nameEn || user.nameAr || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || (user as any).phone || '',
+        nationality: prev.nationality || (user as any).nationality || '',
+        nationalId: prev.nationalId || (user as any).nationalId || '',
+      }));
+    }
+  }, [user]);
 
   // Step 4
   const [studentInfo, setStudentInfo] = useState<StudentInfo>({
@@ -619,7 +647,7 @@ export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; l
       if (!parentInfo.phone.trim()) newErrors.phone = isRTL ? 'مطلوب' : 'Required';
       if (!parentInfo.relationship) newErrors.relationship = isRTL ? 'مطلوب' : 'Required';
       if (!parentInfo.nationality.trim()) newErrors.nationality = isRTL ? 'مطلوب' : 'Required';
-      if (!parentInfo.nationalId.trim()) newErrors.nationalId = isRTL ? 'مطلوب' : 'Required';
+      // nationalId is optional
     }
 
     if (step === 4) {

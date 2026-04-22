@@ -8,7 +8,8 @@
     "journey": "Journey",
     "careers": "Careers",
     "contact": "Contact",
-    "news": "News"
+    "news": "News",
+    "faq": "FAQ"
   },
   "common": {
     "readMore": "Read More",
@@ -28,7 +29,7 @@
     "required": "Required",
     "optional": "Optional",
     "subscribe": "Subscribe",
-    "subscribed": "Subscribed!",
+    "subscribed": "Subscribed successfully!",
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
@@ -200,5 +201,12 @@
     "contactInfo": "Contact Info",
     "followUs": "Follow Us",
     "address": "Address"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to the most common questions about MEYLOR",
+    "searchPlaceholder": "Search questions...",
+    "noResults": "No questions found",
+    "general": "General"
   }
 }
