@@ -431,16 +431,18 @@ export default function AdminCrud({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
-        <table className="w-full text-sm">
+      <div className="relative w-full overflow-x-auto rounded-2xl bg-white shadow-sm">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-gray-100 bg-gray-50">
             <tr>
               {tableFields.map((f) => (
-                <th key={f.key} className="px-4 py-3 text-left font-medium text-gray-500">
+                <th key={f.key} className="whitespace-nowrap px-4 py-3 text-left font-medium text-gray-500">
                   {f.label}
                 </th>
               ))}
-              <th className="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
+              <th className="sticky right-0 whitespace-nowrap bg-gray-50 px-4 py-3 text-right font-medium text-gray-500">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -558,23 +560,36 @@ export default function AdminCrud({
       )}
 
       {/* Delete Confirm */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
-            <Trash2 className="mx-auto mb-4 h-12 w-12 text-danger" />
-            <h3 className="text-lg font-bold text-gray-900">Confirm Delete</h3>
-            <p className="mt-2 text-sm text-gray-500">This action cannot be undone.</p>
-            <div className="mt-6 flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50">
-                Cancel
-              </button>
-              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 rounded-lg bg-danger py-2 text-sm font-semibold text-white hover:bg-danger/90">
-                Delete
-              </button>
+      {deleteConfirm && (() => {
+        const target = items.find((it) => it._id === deleteConfirm);
+        const labelField = tableFields.find((f) => f.showInTable !== false) || fields[0];
+        const entityLabel = target
+          ? (labelField?.bilingual
+              ? (target[`${labelField.key}En`] || target[`${labelField.key}Ar`])
+              : target[labelField.key]) || target.name || target.email || target.title || 'this item'
+          : 'this item';
+        const resourceSingular = title.endsWith('s') ? title.slice(0, -1) : title;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
+              <Trash2 className="mx-auto mb-4 h-12 w-12 text-danger" />
+              <h3 className="text-lg font-bold text-gray-900">Delete {resourceSingular}?</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">&ldquo;{String(entityLabel).slice(0, 60)}&rdquo;</span>
+              </p>
+              <p className="mt-1 text-xs text-gray-400">This action cannot be undone.</p>
+              <div className="mt-6 flex gap-3">
+                <button type="button" onClick={() => setDeleteConfirm(null)} className="flex-1 rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50">
+                  Cancel
+                </button>
+                <button type="button" onClick={() => handleDelete(deleteConfirm)} className="flex-1 rounded-lg bg-danger py-2 text-sm font-semibold text-white hover:bg-danger/90">
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

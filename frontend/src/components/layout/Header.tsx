@@ -86,13 +86,13 @@ export default function Header({ locale }: { locale: string }) {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden items-center gap-1 lg:flex">
+          <nav className="hidden items-center gap-0.5 md:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.key}
                 href={`/${locale}${link.href}`}
                 className={cn(
-                  'relative px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors',
+                  'relative px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors lg:px-3 lg:text-xs',
                   isActive(link.href)
                     ? 'text-primary'
                     : 'text-gray-500 hover:text-gray-900'
@@ -196,7 +196,7 @@ export default function Header({ locale }: { locale: string }) {
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 lg:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 md:hidden"
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -206,7 +206,7 @@ export default function Header({ locale }: { locale: string }) {
 
       {/* Mobile Nav */}
       {mobileOpen && (
-        <div className="border-t border-gray-100 bg-white lg:hidden">
+        <div className="border-t border-gray-100 bg-white md:hidden">
           <nav className="container-custom py-3">
             {navLinks.map((link) => (
               <Link

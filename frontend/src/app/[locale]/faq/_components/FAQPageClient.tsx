@@ -60,6 +60,25 @@ export default function FAQPageClient({ faqs, locale }: FAQPageClientProps) {
     }
   })();
 
+  const categoryLabel = (slug: string): string => {
+    if (!slug) return generalLabel;
+    const key = slug.toLowerCase();
+    const map: Record<string, { en: string; ar: string }> = {
+      admissions: { en: 'Admissions', ar: 'القبول والتسجيل' },
+      academics: { en: 'Academics', ar: 'الأكاديميات' },
+      fees: { en: 'Fees & Payment', ar: 'الرسوم والدفع' },
+      pricing: { en: 'Pricing', ar: 'الأسعار' },
+      transportation: { en: 'Transportation', ar: 'المواصلات' },
+      curriculum: { en: 'Curriculum', ar: 'المناهج' },
+      facilities: { en: 'Facilities', ar: 'المرافق' },
+      careers: { en: 'Careers', ar: 'الوظائف' },
+      general: { en: 'General', ar: 'عام' },
+    };
+    if (map[key]) return isRTL ? map[key].ar : map[key].en;
+    // Fallback: title-case the slug
+    return key.charAt(0).toUpperCase() + key.slice(1);
+  };
+
   const filtered = useMemo(() => {
     if (!query.trim()) return faqs;
     const q = query.trim().toLowerCase();
@@ -74,12 +93,12 @@ export default function FAQPageClient({ faqs, locale }: FAQPageClientProps) {
   const grouped = useMemo(() => {
     const groups: Record<string, any[]> = {};
     filtered.forEach((faq: any) => {
-      const category = (faq?.category && String(faq.category).trim()) || generalLabel;
+      const category = (faq?.category && String(faq.category).trim().toLowerCase()) || 'general';
       if (!groups[category]) groups[category] = [];
       groups[category].push(faq);
     });
     return groups;
-  }, [filtered, generalLabel]);
+  }, [filtered]);
 
   const categoryKeys = Object.keys(grouped);
   const hasFaqs = faqs.length > 0;
@@ -133,7 +152,7 @@ export default function FAQPageClient({ faqs, locale }: FAQPageClientProps) {
                     viewport={{ once: true }}
                     className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary"
                   >
-                    {category}
+                    {categoryLabel(category)}
                   </motion.h2>
 
                   <div className="space-y-3">

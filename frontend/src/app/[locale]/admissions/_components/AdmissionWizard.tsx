@@ -269,11 +269,13 @@ function StepParentInfo({
   onChange,
   errors,
   isRTL,
+  isLoggedIn,
 }: {
   data: ParentInfo;
   onChange: (field: keyof ParentInfo, value: string) => void;
   errors: WizardErrors;
   isRTL: boolean;
+  isLoggedIn: boolean;
 }) {
   const relationships = isRTL
     ? ['أب', 'أم', 'وصي/ولي أمر']
@@ -287,6 +289,11 @@ function StepParentInfo({
       <p className="mb-6 text-sm text-gray-500">
         {isRTL ? 'يرجى تعبئة بيانات ولي الأمر بدقة' : 'Please fill in the parent/guardian details accurately'}
       </p>
+      {isLoggedIn && (
+        <div className="mb-4 rounded-lg border border-accent/30 bg-accent/5 px-4 py-2.5 text-xs font-medium text-accent">
+          {isRTL ? 'تم التعبئة من ملفك الشخصي' : 'Prefilled from your profile'}
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <FieldInput label={isRTL ? 'اسم ولي الأمر' : 'Full Name'} value={data.parentName} onChange={(v) => onChange('parentName', v)} error={errors.parentName} required />
         <FieldInput label={isRTL ? 'البريد الإلكتروني' : 'Email Address'} type="email" value={data.email} onChange={(v) => onChange('email', v)} error={errors.email} required dir="ltr" />
@@ -328,17 +335,25 @@ function StepStudentInfo({
   onChange,
   errors,
   isRTL,
+  children,
+  selectedChildIndex,
+  onSelectChild,
 }: {
   data: StudentInfo;
   onChange: (field: keyof StudentInfo, value: string) => void;
   errors: WizardErrors;
   isRTL: boolean;
+  children: any[];
+  selectedChildIndex: number | null;
+  onSelectChild: (idx: number | null) => void;
 }) {
   const genders = isRTL ? ['ذكر', 'أنثى'] : ['Male', 'Female'];
   const grades = [
     'KG1', 'KG2', 'KG3',
     ...Array.from({ length: 12 }, (_, i) => (isRTL ? `الصف ${i + 1}` : `Grade ${i + 1}`)),
   ];
+
+  const hasChildren = children && children.length > 0;
 
   return (
     <div>
@@ -348,6 +363,40 @@ function StepStudentInfo({
       <p className="mb-6 text-sm text-gray-500">
         {isRTL ? 'يرجى تعبئة بيانات الطالب بدقة' : 'Please fill in the student details accurately'}
       </p>
+      {hasChildren && (
+        <div className="mb-6">
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            {isRTL ? 'التقديم لأي طفل؟' : 'Apply for which child?'}
+          </label>
+          <select
+            value={selectedChildIndex === null ? '' : String(selectedChildIndex)}
+            onChange={(e) => {
+              const v = e.target.value;
+              onSelectChild(v === '' ? null : Number(v));
+            }}
+            className="input-field"
+          >
+            <option value="">
+              {isRTL ? 'طفل جديد (إدخال يدوي)' : 'New child (fill manually)'}
+            </option>
+            {children.map((child: any, idx: number) => {
+              const name = isRTL ? (child.nameAr || child.nameEn) : (child.nameEn || child.nameAr);
+              return (
+                <option key={idx} value={idx}>
+                  {name}{child.grade ? ` — ${child.grade}` : ''}
+                </option>
+              );
+            })}
+          </select>
+          {selectedChildIndex !== null && (
+            <p className="mt-1 text-xs font-medium text-green-600">
+              {isRTL
+                ? 'تم التعبئة من ملفك الشخصي — عدّل إذا لزم الأمر'
+                : 'Prefilled from your profile — edit if needed'}
+            </p>
+          )}
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <FieldInput label={isRTL ? 'اسم الطالب (بالإنجليزية)' : 'Student Name (English)'} value={data.studentNameEn} onChange={(v) => onChange('studentNameEn', v)} error={errors.studentNameEn} required dir="ltr" />
         <FieldInput label={isRTL ? 'اسم الطالب (بالعربية)' : 'Student Name (Arabic)'} value={data.studentNameAr} onChange={(v) => onChange('studentNameAr', v)} error={errors.studentNameAr} required dir="rtl" />
@@ -403,6 +452,17 @@ function StepStudentInfo({
 }
 
 // ─── Step 5: Review ──────────────────────────────────────
+function formatDate(val: string, locale: string) {
+  if (!val) return '—';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return val;
+  return d.toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 function StepReview({
   selectedPackage,
   pricing,
@@ -458,13 +518,13 @@ function StepReview({
           <Field label={isRTL ? 'الهاتف' : 'Phone'} value={parentInfo.phone} />
           <Field label={isRTL ? 'صلة القرابة' : 'Relationship'} value={parentInfo.relationship} />
           <Field label={isRTL ? 'الجنسية' : 'Nationality'} value={parentInfo.nationality} />
-          <Field label={isRTL ? 'رقم الهوية / الإقامة' : 'ID / Iqama'} value={parentInfo.nationalId} />
+          <Field label={isRTL ? 'رقم الهوية / الإقامة' : 'ID / Iqama'} value={parentInfo.nationalId?.trim() ? parentInfo.nationalId : '—'} />
         </Section>
 
         <Section title={isRTL ? 'بيانات الطالب' : 'Student Information'}>
           <Field label={isRTL ? 'الاسم (إنجليزي)' : 'Name (English)'} value={studentInfo.studentNameEn} />
           <Field label={isRTL ? 'الاسم (عربي)' : 'Name (Arabic)'} value={studentInfo.studentNameAr} />
-          <Field label={isRTL ? 'تاريخ الميلاد' : 'Date of Birth'} value={studentInfo.dateOfBirth} />
+          <Field label={isRTL ? 'تاريخ الميلاد' : 'Date of Birth'} value={formatDate(studentInfo.dateOfBirth, locale)} />
           <Field label={isRTL ? 'الجنس' : 'Gender'} value={studentInfo.gender} />
           <Field label={isRTL ? 'الصف' : 'Grade'} value={studentInfo.currentGrade} />
           <Field label={isRTL ? 'المدرسة السابقة' : 'Previous School'} value={studentInfo.previousSchool} />
@@ -600,6 +660,41 @@ export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; l
     medicalConditions: '',
   });
 
+  const userChildren: any[] = (user as any)?.children || [];
+  const [selectedChildIndex, setSelectedChildIndex] = useState<number | null>(null);
+
+  const handleSelectChild = useCallback((idx: number | null) => {
+    setSelectedChildIndex(idx);
+    if (idx === null) {
+      setStudentInfo((prev) => ({
+        ...prev,
+        studentNameEn: '',
+        studentNameAr: '',
+        dateOfBirth: '',
+        gender: '',
+        currentGrade: '',
+        medicalConditions: '',
+      }));
+    } else {
+      const child = userChildren[idx];
+      if (child) {
+        const dob = child.dateOfBirth ? new Date(child.dateOfBirth) : null;
+        const dobStr =
+          dob && !isNaN(dob.getTime()) ? dob.toISOString().slice(0, 10) : (child.dateOfBirth || '');
+        setStudentInfo((prev) => ({
+          ...prev,
+          studentNameEn: child.nameEn || '',
+          studentNameAr: child.nameAr || '',
+          dateOfBirth: dobStr,
+          gender: child.gender || '',
+          currentGrade: child.grade || '',
+          medicalConditions: child.medicalConditions || '',
+        }));
+      }
+    }
+    setErrors({});
+  }, [userChildren]);
+
   const [errors, setErrors] = useState<WizardErrors>({});
 
   const handleParentChange = useCallback((field: keyof ParentInfo, value: string) => {
@@ -708,6 +803,7 @@ export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; l
     setTermsAccepted(false);
     setParentInfo({ parentName: '', email: '', phone: '', relationship: '', nationality: '', nationalId: '' });
     setStudentInfo({ studentNameEn: '', studentNameAr: '', dateOfBirth: '', gender: '', currentGrade: '', previousSchool: '', medicalConditions: '' });
+    setSelectedChildIndex(null);
     setErrors({});
   };
 
@@ -781,6 +877,7 @@ export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; l
                 onChange={handleParentChange}
                 errors={errors}
                 isRTL={isRTL}
+                isLoggedIn={!!user}
               />
             )}
             {currentStep === 4 && (
@@ -789,6 +886,9 @@ export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; l
                 onChange={handleStudentChange}
                 errors={errors}
                 isRTL={isRTL}
+                children={userChildren}
+                selectedChildIndex={selectedChildIndex}
+                onSelectChild={handleSelectChild}
               />
             )}
             {currentStep === 5 && (

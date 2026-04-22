@@ -10,9 +10,9 @@ export default function AdminContacts() {
       fields={[
         { key: 'name', label: 'Name', showInTable: true },
         { key: 'email', label: 'Email', showInTable: true },
-        { key: 'phone', label: 'Phone' },
+        { key: 'phone', label: 'Phone', showInTable: true },
         { key: 'subject', label: 'Subject', showInTable: true },
-        { key: 'message', label: 'Message', type: 'textarea', showInTable: true },
+        { key: 'message', label: 'Message', type: 'textarea', showInTable: false },
         { key: 'isRead', label: 'Read', type: 'boolean', showInTable: true },
       ]}
     />
