@@ -1,0 +1,112 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+interface FetchOptions extends RequestInit {
+  token?: string;
+}
+
+async function fetchApi<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+  const { token, ...fetchOptions } = options;
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    ...fetchOptions,
+    headers,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || 'API Error');
+  }
+
+  return data;
+}
+
+// ─── Public API ───────────────────────────────────────────
+export const publicApi = {
+  getSettings: () => fetchApi('/public/settings', { next: { revalidate: 60 } }),
+  getSections: (page?: string) =>
+    fetchApi(`/public/sections${page ? `?page=${page}` : ''}`, { next: { revalidate: 30 } }),
+  getPrograms: () => fetchApi('/public/programs', { next: { revalidate: 60 } }),
+  getProgram: (slug: string) => fetchApi(`/public/programs/${slug}`, { next: { revalidate: 60 } }),
+  getFacilities: () => fetchApi('/public/facilities', { next: { revalidate: 60 } }),
+  getTestimonials: () => fetchApi('/public/testimonials', { next: { revalidate: 60 } }),
+  getNews: (page = 1, limit = 12) =>
+    fetchApi(`/public/news?page=${page}&limit=${limit}`, { next: { revalidate: 30 } }),
+  getNewsPost: (slug: string) => fetchApi(`/public/news/${slug}`, { next: { revalidate: 30 } }),
+  getGallery: () => fetchApi('/public/gallery', { next: { revalidate: 30 } }),
+  getGalleryActivity: (slug: string) => fetchApi(`/public/gallery/${slug}`, { next: { revalidate: 30 } }),
+  getJourney: () => fetchApi('/public/journey', { next: { revalidate: 60 } }),
+  getPricing: () => fetchApi('/public/pricing', { next: { revalidate: 60 } }),
+  getJobs: () => fetchApi('/public/jobs', { next: { revalidate: 30 } }),
+  getJob: (slug: string) => fetchApi(`/public/jobs/${slug}`, { next: { revalidate: 30 } }),
+  getStats: () => fetchApi('/public/stats', { next: { revalidate: 60 } }),
+  getFAQs: (category?: string) =>
+    fetchApi(`/public/faqs${category ? `?category=${category}` : ''}`, { next: { revalidate: 60 } }),
+  getTeam: (category?: string) =>
+    fetchApi(`/public/team${category ? `?category=${category}` : ''}`, { next: { revalidate: 60 } }),
+
+  // Form submissions
+  submitContact: (data: any) =>
+    fetchApi('/public/contact', { method: 'POST', body: JSON.stringify(data) }),
+  submitComplaint: (data: any) =>
+    fetchApi('/public/complaints', { method: 'POST', body: JSON.stringify(data) }),
+  submitApplication: (data: any) =>
+    fetchApi('/public/applications', { method: 'POST', body: JSON.stringify(data) }),
+  subscribeNewsletter: (email: string) =>
+    fetchApi('/public/newsletter', { method: 'POST', body: JSON.stringify({ email }) }),
+};
+
+// ─── Admin API ────────────────────────────────────────────
+export const adminApi = {
+  // Auth
+  login: (email: string, password: string) =>
+    fetchApi('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  refresh: (refreshToken: string) =>
+    fetchApi('/auth/refresh', { method: 'POST', body: JSON.stringify({ refreshToken }) }),
+  logout: (token: string, refreshToken?: string) =>
+    fetchApi('/auth/logout', { method: 'POST', token, body: JSON.stringify({ refreshToken }) }),
+  getMe: (token: string) => fetchApi('/auth/me', { token }),
+  changePassword: (token: string, currentPassword: string, newPassword: string) =>
+    fetchApi('/auth/change-password', {
+      method: 'PUT',
+      token,
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+  updateProfile: (data: any, token: string) =>
+    fetchApi('/auth/profile', { method: 'PUT', token, body: JSON.stringify(data) }),
+
+  // Dashboard
+  getDashboard: (token: string) => fetchApi('/admin/dashboard', { token }),
+
+  // Generic CRUD
+  getAll: (resource: string, token: string, params = '') =>
+    fetchApi(`/admin/${resource}${params ? `?${params}` : ''}`, { token }),
+  getOne: (resource: string, id: string, token: string) =>
+    fetchApi(`/admin/${resource}/${id}`, { token }),
+  create: (resource: string, data: any, token: string) =>
+    fetchApi(`/admin/${resource}`, { method: 'POST', token, body: JSON.stringify(data) }),
+  update: (resource: string, id: string, data: any, token: string) =>
+    fetchApi(`/admin/${resource}/${id}`, { method: 'PUT', token, body: JSON.stringify(data) }),
+  remove: (resource: string, id: string, token: string) =>
+    fetchApi(`/admin/${resource}/${id}`, { method: 'DELETE', token }),
+  reorder: (resource: string, items: { id: string; order: number }[], token: string) =>
+    fetchApi(`/admin/${resource}-reorder`, {
+      method: 'PUT',
+      token,
+      body: JSON.stringify({ items }),
+    }),
+
+  // Settings
+  getSettings: (token: string) => fetchApi('/admin/settings', { token }),
+  updateSettings: (data: any, token: string) =>
+    fetchApi('/admin/settings', { method: 'PUT', token, body: JSON.stringify(data) }),
+};
