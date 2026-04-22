@@ -40,7 +40,7 @@ const seed = async () => {
     TeamMember.deleteMany({}),
   ]);
 
-  // ─── Super Admin ──────────────────────────────────────────────
+  // ─── Users (Admin + Parent + Student for testing) ─────────────
   await User.create({
     email: process.env.ADMIN_EMAIL || "admin@meylor.sa",
     password: process.env.ADMIN_PASSWORD || "Admin@123",
@@ -48,7 +48,45 @@ const seed = async () => {
     nameAr: "المدير العام",
     role: "SUPER_ADMIN",
   });
-  console.log("✓ Admin user created");
+
+  await User.create({
+    email: "parent@meylor.sa",
+    password: "Parent@2026!",
+    nameEn: "Ahmad Al-Rashid",
+    nameAr: "أحمد الراشد",
+    role: "PARENT",
+    phone: "+966501234567",
+    nationality: "Saudi",
+    nationalId: "1234567890",
+    children: [
+      {
+        nameEn: "Sara Ahmad",
+        nameAr: "سارة أحمد",
+        dateOfBirth: new Date("2015-05-10"),
+        gender: "female",
+        grade: "Grade 3",
+        medicalConditions: "",
+      },
+      {
+        nameEn: "Omar Ahmad",
+        nameAr: "عمر أحمد",
+        dateOfBirth: new Date("2018-09-22"),
+        gender: "male",
+        grade: "KG2",
+        medicalConditions: "",
+      },
+    ],
+  });
+
+  await User.create({
+    email: "student@meylor.sa",
+    password: "Student@2026!",
+    nameEn: "Sara Ahmad",
+    nameAr: "سارة أحمد",
+    role: "STUDENT",
+  });
+
+  console.log("✓ Users created (Admin + Parent + Student)");
 
   // ─── Site Settings ────────────────────────────────────────────
   await SiteSettings.create({

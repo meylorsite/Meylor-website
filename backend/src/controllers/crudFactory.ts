@@ -3,7 +3,11 @@ import { Model } from 'mongoose';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 
-export const getAll = (Model: Model<any>) =>
+interface GetAllOptions {
+  populate?: string;
+}
+
+export const getAll = (Model: Model<any>, options: GetAllOptions = {}) =>
   asyncHandler(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 50;
@@ -35,8 +39,13 @@ export const getAll = (Model: Model<any>) =>
       filter.page = req.query.page_filter;
     }
 
+    let query = Model.find(filter).sort(sort).skip(skip).limit(limit);
+    if (options.populate) {
+      query = query.populate(options.populate);
+    }
+
     const [data, total] = await Promise.all([
-      Model.find(filter).sort(sort).skip(skip).limit(limit),
+      query.exec(),
       Model.countDocuments(filter),
     ]);
 

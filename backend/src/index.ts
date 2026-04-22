@@ -82,6 +82,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/public/contact', formLimiter);
 app.use('/api/public/complaints', formLimiter);
 app.use('/api/public/applications', formLimiter);
+app.use('/api/public/admissions', formLimiter);
 app.use('/api/public/newsletter', formLimiter);
 
 // Health check

@@ -1,8 +1,15 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { validate } from '../middleware/validate';
-import { contactMessageSchema, complaintTicketSchema, jobApplicationSchema, newsletterSchema } from '../validators/public';
+import {
+  contactMessageSchema,
+  complaintTicketSchema,
+  jobApplicationSchema,
+  newsletterSchema,
+  admissionApplicationSchema,
+} from '../validators/public';
 import { generateTicketNumber } from '../utils/ticketNumber';
+import { verifyAccessToken } from '../utils/jwt';
 import {
   SiteSettings,
   Section,
@@ -15,13 +22,30 @@ import {
   PricingPackage,
   JobPost,
   JobApplication,
+  AdmissionApplication,
   ContactMessage,
   ComplaintTicket,
   NewsletterSubscriber,
   StatCounter,
   FAQ,
   TeamMember,
+  User,
 } from '../models';
+
+// Optional auth: attaches req.user if a valid Bearer token is provided, but doesn't reject otherwise
+const optionalAuth = async (req: Request, _res: Response, next: NextFunction) => {
+  const h = req.headers.authorization;
+  if (!h?.startsWith('Bearer ')) return next();
+  try {
+    const token = h.split(' ')[1];
+    const decoded = verifyAccessToken(token);
+    const user = await User.findById(decoded.userId);
+    if (user) req.user = user;
+  } catch {
+    // ignore invalid tokens for public routes
+  }
+  next();
+};
 
 const router = Router();
 
@@ -234,6 +258,38 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const app = await JobApplication.create(req.body);
     res.status(201).json({ success: true, data: { id: app._id }, message: 'Application submitted successfully' });
+  })
+);
+
+// ─── Admission Application (public submit) ─────────────────────
+router.post(
+  '/admissions',
+  optionalAuth,
+  validate(admissionApplicationSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    const { packageId, packageName, parentInfo, studentInfo, locale } = req.body;
+
+    const doc = await AdmissionApplication.create({
+      packageId: packageId || undefined,
+      packageName: packageName || '',
+      parentName: parentInfo.parentName,
+      parentEmail: parentInfo.email,
+      parentPhone: parentInfo.phone,
+      relationship: parentInfo.relationship || '',
+      nationality: parentInfo.nationality || '',
+      nationalId: parentInfo.nationalId || '',
+      studentNameEn: studentInfo.studentNameEn || '',
+      studentNameAr: studentInfo.studentNameAr || '',
+      dateOfBirth: studentInfo.dateOfBirth ? new Date(studentInfo.dateOfBirth) : undefined,
+      gender: studentInfo.gender || '',
+      currentGrade: studentInfo.currentGrade || '',
+      previousSchool: studentInfo.previousSchool || '',
+      medicalConditions: studentInfo.medicalConditions || '',
+      locale: locale || 'en',
+      submittedBy: req.user?._id,
+    });
+
+    res.status(201).json({ success: true, data: { id: doc._id }, message: 'Application submitted successfully' });
   })
 );
 

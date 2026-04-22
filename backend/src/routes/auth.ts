@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import User from '../models/User';
+import AdmissionApplication from '../models/AdmissionApplication';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
@@ -160,6 +161,23 @@ router.put(
     }
 
     res.json({ success: true, data: user.toJSON() });
+  })
+);
+
+// Get my admission applications (for logged-in parent/student)
+router.get(
+  '/my-admissions',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user;
+    const data = await AdmissionApplication.find({
+      $or: [{ submittedBy: user._id }, { parentEmail: user.email }],
+    })
+      .sort({ createdAt: -1 })
+      .select('-adminNotes')
+      .lean();
+
+    res.json({ success: true, data });
   })
 );
 

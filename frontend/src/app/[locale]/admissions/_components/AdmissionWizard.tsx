@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronLeft, ChevronRight, Package, FileText, User, GraduationCap, ClipboardCheck, Loader2, CheckCircle, Star } from 'lucide-react';
 import { publicApi } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth-store';
 import { getLocalizedField, getLocalizedArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
@@ -538,6 +539,7 @@ function SuccessScreen({ isRTL, onReset }: { isRTL: boolean; onReset: () => void
 // ─── Main Wizard Component ───────────────────────────────
 export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; locale: string }) {
   const isRTL = locale === 'ar';
+  const accessToken = useAuthStore((s) => s.accessToken);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
@@ -652,13 +654,16 @@ export default function AdmissionWizard({ pricing, locale }: { pricing: any[]; l
     setLoading(true);
     try {
       const pkg = pricing.find((p) => p._id === selectedPackage);
-      await publicApi.submitApplication({
-        packageId: selectedPackage,
-        packageName: pkg ? getLocalizedField(pkg, 'title', 'en') : '',
-        parentInfo,
-        studentInfo,
-        locale,
-      });
+      await publicApi.submitAdmission(
+        {
+          packageId: selectedPackage,
+          packageName: pkg ? getLocalizedField(pkg, 'title', 'en') : '',
+          parentInfo,
+          studentInfo,
+          locale,
+        },
+        accessToken || undefined
+      );
       setSubmitted(true);
       toast.success(isRTL ? 'تم تقديم الطلب بنجاح!' : 'Application submitted successfully!');
     } catch (err: any) {

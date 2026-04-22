@@ -10,6 +10,7 @@ export { default as JourneyItem } from './JourneyItem';
 export { default as PricingPackage } from './PricingPackage';
 export { default as JobPost } from './JobPost';
 export { default as JobApplication } from './JobApplication';
+export { default as AdmissionApplication } from './AdmissionApplication';
 export { default as ContactMessage } from './ContactMessage';
 export { default as ComplaintTicket } from './ComplaintTicket';
 export { default as NewsletterSubscriber } from './NewsletterSubscriber';

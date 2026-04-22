@@ -4,16 +4,37 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
+import { adminApi } from '@/lib/api';
 import { ClipboardList, Clock, CheckCircle2, XCircle, ArrowRight, ArrowLeft, Plus } from 'lucide-react';
 
 export default function MyApplicationsPage() {
   const { locale } = useParams() as { locale: string };
-  const { user } = useAuthStore();
+  const { accessToken } = useAuthStore();
   const isAr = locale === 'ar';
   const Arrow = isAr ? ArrowLeft : ArrowRight;
 
-  // TODO: Fetch actual parent applications from API when endpoint is ready
-  const applications: any[] = [];
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    let cancelled = false;
+    setLoading(true);
+    adminApi
+      .getMyAdmissions(accessToken)
+      .then((res: any) => {
+        if (!cancelled) setApplications(res.data || []);
+      })
+      .catch(() => {
+        if (!cancelled) setApplications([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
 
   const statusConfig: Record<string, { icon: any; label: string; labelAr: string; color: string }> = {
     pending: { icon: Clock, label: 'Pending Review', labelAr: 'قيد المراجعة', color: 'bg-amber/10 text-amber' },
@@ -38,7 +59,13 @@ export default function MyApplicationsPage() {
         </Link>
       </div>
 
-      {applications.length === 0 ? (
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-20 animate-pulse rounded-2xl bg-white shadow-sm" />
+          ))}
+        </div>
+      ) : applications.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-white p-12 text-center">
           <ClipboardList className="mx-auto h-12 w-12 text-gray-300" />
           <h3 className="mt-4 text-lg font-bold text-gray-900">{isAr ? 'لا توجد طلبات بعد' : 'No Applications Yet'}</h3>
@@ -55,17 +82,23 @@ export default function MyApplicationsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {applications.map((app: any, i: number) => {
+          {applications.map((app: any) => {
             const status = statusConfig[app.status] || statusConfig.pending;
             const StatusIcon = status.icon;
+            const studentName = isAr
+              ? app.studentNameAr || app.studentNameEn
+              : app.studentNameEn || app.studentNameAr;
             return (
-              <div key={i} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm">
+              <div key={app._id} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm">
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${status.color}`}>
                   <StatusIcon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-gray-900">{app.studentName}</p>
-                  <p className="text-xs text-gray-400">{app.program} · {app.grade}</p>
+                  <p className="text-sm font-bold text-gray-900">{studentName || '—'}</p>
+                  <p className="text-xs text-gray-400">
+                    {app.packageName || (isAr ? 'بدون باقة' : 'No package')}
+                    {app.currentGrade ? ` · ${app.currentGrade}` : ''}
+                  </p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.color}`}>
                   {isAr ? status.labelAr : status.label}

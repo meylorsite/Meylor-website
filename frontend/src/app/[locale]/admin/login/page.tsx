@@ -7,6 +7,11 @@ import { useAuthStore } from '@/lib/auth-store';
 import toast from 'react-hot-toast';
 import { Lock, Mail } from 'lucide-react';
 
+const destinationForRole = (role?: string) => {
+  if (role === 'PARENT' || role === 'STUDENT') return '/admin/portal';
+  return '/admin';
+};
+
 export default function LoginPage() {
   const { locale } = useParams() as { locale: string };
   const router = useRouter();
@@ -15,13 +20,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const isAr = locale === 'ar';
+
   useEffect(() => {
     initAuth();
   }, [initAuth]);
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.replace(`/${locale}/admin`);
+      router.replace(`/${locale}${destinationForRole(user.role)}`);
     }
   }, [isLoading, user, router, locale]);
 
@@ -29,11 +36,12 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(email, password);
-      router.push(`/${locale}/admin`);
-      toast.success('Welcome back!');
+      const loggedInUser = await login(email, password);
+      const role = loggedInUser?.role || useAuthStore.getState().user?.role;
+      router.push(`/${locale}${destinationForRole(role)}`);
+      toast.success(isAr ? 'مرحباً بعودتك!' : 'Welcome back!');
     } catch (err: any) {
-      toast.error(err.message || 'Login failed');
+      toast.error(err.message || (isAr ? 'فشل تسجيل الدخول' : 'Login failed'));
     } finally {
       setLoading(false);
     }
@@ -52,8 +60,14 @@ export default function LoginPage() {
               className="h-14 w-auto"
             />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="mt-1 text-sm text-gray-500">Sign in to manage your school</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isAr ? 'تسجيل الدخول' : 'Sign In'}
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {isAr
+              ? 'مرحباً بك في ميلور — سجّل دخولك للمتابعة'
+              : 'Welcome to MEYLOR — sign in to continue'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,7 +75,7 @@ export default function LoginPage() {
             <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               type="email"
-              placeholder="Email"
+              placeholder={isAr ? 'البريد الإلكتروني' : 'Email'}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -73,7 +87,7 @@ export default function LoginPage() {
             <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               type="password"
-              placeholder="Password"
+              placeholder={isAr ? 'كلمة المرور' : 'Password'}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -86,9 +100,15 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? (isAr ? 'جارِ تسجيل الدخول...' : 'Signing in...') : (isAr ? 'تسجيل الدخول' : 'Sign In')}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-xs text-gray-400">
+          {isAr
+            ? 'أولياء الأمور والطلاب والإداريون يدخلون من هنا'
+            : 'Parents, students, and administrators sign in here'}
+        </p>
       </div>
     </div>
   );

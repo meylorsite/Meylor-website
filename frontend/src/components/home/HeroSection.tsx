@@ -26,21 +26,23 @@ export default function HeroSection({ section, locale }: HeroSectionProps) {
 
   return (
     <>
-      <section className="relative min-h-screen overflow-hidden bg-primary">
+      <section className="relative min-h-screen overflow-hidden bg-gray-900">
         {imageUrl && (
           <div className="absolute inset-0">
-            <Image src={imageUrl} alt="MEYLOR" fill className="animate-ken-burns object-cover opacity-15" priority sizes="100vw" />
+            <Image src={imageUrl} alt="MEYLOR" fill className="animate-ken-burns object-cover" priority sizes="100vw" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary-dark/60 to-primary/70" />
+        {/* Dark overlay — transparent, no heavy blue */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
         <motion.div
-          className="absolute -right-20 top-1/4 h-[400px] w-[400px] rounded-full bg-accent/15 blur-3xl"
+          className="absolute -right-20 top-1/4 hidden h-[400px] w-[400px] rounded-full bg-accent/10 blur-3xl md:block"
           animate={{ x: [0, 30, -20, 0], y: [0, -25, 15, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute -left-20 bottom-1/4 h-[300px] w-[300px] rounded-full bg-amber/10 blur-3xl"
+          className="absolute -left-20 bottom-1/4 hidden h-[300px] w-[300px] rounded-full bg-amber/5 blur-3xl md:block"
           animate={{ x: [0, -25, 20, 0], y: [0, 15, -20, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
         />

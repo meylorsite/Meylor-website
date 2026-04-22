@@ -15,6 +15,7 @@ import {
   PricingPackage,
   JobPost,
   JobApplication,
+  AdmissionApplication,
   ContactMessage,
   ComplaintTicket,
   NewsletterSubscriber,
@@ -178,6 +179,12 @@ router.get('/applications/:id', crud.getOne(JobApplication));
 router.put('/applications/:id', crud.updateOne(JobApplication));
 router.delete('/applications/:id', crud.deleteOne(JobApplication));
 
+// ─── Admission Applications ─────────────────────────────────────
+router.get('/admissions', crud.getAll(AdmissionApplication, { populate: 'submittedBy packageId' }));
+router.get('/admissions/:id', crud.getOne(AdmissionApplication));
+router.put('/admissions/:id', crud.updateOne(AdmissionApplication));
+router.delete('/admissions/:id', crud.deleteOne(AdmissionApplication));
+
 // ─── Contact Messages ───────────────────────────────────────────
 router.get('/contacts', crud.getAll(ContactMessage));
 router.get('/contacts/:id', crud.getOne(ContactMessage));
@@ -229,6 +236,8 @@ router.get(
       openComplaints,
       totalApplications,
       pendingApplications,
+      totalAdmissions,
+      pendingAdmissions,
       totalSubscribers,
       totalNews,
       totalJobs,
@@ -243,6 +252,7 @@ router.get(
       recentContacts,
       recentComplaints,
       recentApplications,
+      recentAdmissions,
       recentNews,
     ] = await Promise.all([
       ContactMessage.countDocuments(),
@@ -251,6 +261,8 @@ router.get(
       ComplaintTicket.countDocuments({ status: 'open' }),
       JobApplication.countDocuments(),
       JobApplication.countDocuments({ status: 'pending' }),
+      AdmissionApplication.countDocuments(),
+      AdmissionApplication.countDocuments({ status: 'pending' }),
       NewsletterSubscriber.countDocuments({ isActive: true }),
       NewsPost.countDocuments(),
       JobPost.countDocuments({ isOpen: true }),
@@ -265,6 +277,7 @@ router.get(
       ContactMessage.find().sort({ createdAt: -1 }).limit(5).lean(),
       ComplaintTicket.find().sort({ createdAt: -1 }).limit(5).lean(),
       JobApplication.find().sort({ createdAt: -1 }).limit(5).populate('jobPost', 'titleEn titleAr').lean(),
+      AdmissionApplication.find().sort({ createdAt: -1 }).limit(5).lean(),
       NewsPost.find().sort({ publishedAt: -1 }).limit(5).select('titleEn titleAr slug publishedAt imageUrl').lean(),
     ]);
 
@@ -277,6 +290,8 @@ router.get(
         openComplaints,
         totalApplications,
         pendingApplications,
+        totalAdmissions,
+        pendingAdmissions,
         totalSubscribers,
         totalNews,
         totalJobs,
@@ -291,6 +306,7 @@ router.get(
         recentContacts,
         recentComplaints,
         recentApplications,
+        recentAdmissions,
         recentNews,
       },
     });

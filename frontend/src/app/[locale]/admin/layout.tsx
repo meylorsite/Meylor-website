@@ -28,6 +28,7 @@ const adminLinks = [
   { key: 'Stats', icon: BarChart3, href: '/stats' },
   { key: 'Jobs', icon: Briefcase, href: '/jobs' },
   { key: 'Applications', icon: Briefcase, href: '/applications' },
+  { key: 'Admissions', icon: ClipboardList, href: '/admissions' },
   { key: 'Contacts', icon: Mail, href: '/contacts' },
   { key: 'Complaints', icon: AlertTriangle, href: '/complaints' },
   { key: 'Newsletter', icon: Newspaper, href: '/newsletter' },
@@ -70,12 +71,18 @@ export default function AdminLayout({ children, params: { locale } }: { children
     }
   }, [isLoading, user, router, locale, isLoginPage]);
 
-  // Redirect parent/student away from admin dashboard to portal
+  // Redirect parent/student away from admin-only pages to portal
   useEffect(() => {
     if (!isLoading && user && (user.role === 'PARENT' || user.role === 'STUDENT')) {
       const adminRoot = `/${locale}/admin`;
-      if (pathname === adminRoot || pathname === `${adminRoot}/`) {
-        router.replace(`/${locale}/admin/portal`);
+      const allowedPaths = ['/portal', '/profile', '/my-applications'];
+      const relative = pathname.replace(adminRoot, '') || '/';
+      const isAllowed = relative === '/' || relative === '' ||
+        allowedPaths.some((p) => relative === p || relative.startsWith(`${p}/`));
+      if (!isAllowed) {
+        router.replace(`${adminRoot}/portal`);
+      } else if (relative === '/' || relative === '') {
+        router.replace(`${adminRoot}/portal`);
       }
     }
   }, [isLoading, user, pathname, router, locale]);

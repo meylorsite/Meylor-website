@@ -61,6 +61,8 @@ export const publicApi = {
     fetchApi('/public/complaints', { method: 'POST', body: JSON.stringify(data) }),
   submitApplication: (data: any) =>
     fetchApi('/public/applications', { method: 'POST', body: JSON.stringify(data) }),
+  submitAdmission: (data: any, token?: string) =>
+    fetchApi('/public/admissions', { method: 'POST', body: JSON.stringify(data), token }),
   subscribeNewsletter: (email: string) =>
     fetchApi('/public/newsletter', { method: 'POST', body: JSON.stringify({ email }) }),
 };
@@ -75,6 +77,7 @@ export const adminApi = {
   logout: (token: string, refreshToken?: string) =>
     fetchApi('/auth/logout', { method: 'POST', token, body: JSON.stringify({ refreshToken }) }),
   getMe: (token: string) => fetchApi('/auth/me', { token }),
+  getMyAdmissions: (token: string) => fetchApi('/auth/my-admissions', { token }),
   changePassword: (token: string, currentPassword: string, newPassword: string) =>
     fetchApi('/auth/change-password', {
       method: 'PUT',

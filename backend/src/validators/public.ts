@@ -31,3 +31,26 @@ export const jobApplicationSchema = z.object({
 export const newsletterSchema = z.object({
   email: z.string().email(),
 });
+
+export const admissionApplicationSchema = z.object({
+  packageId: z.string().optional(),
+  packageName: z.string().optional(),
+  parentInfo: z.object({
+    parentName: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().min(1),
+    relationship: z.string().optional(),
+    nationality: z.string().optional(),
+    nationalId: z.string().optional(),
+  }),
+  studentInfo: z.object({
+    studentNameEn: z.string().optional(),
+    studentNameAr: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+    gender: z.string().optional(),
+    currentGrade: z.string().optional(),
+    previousSchool: z.string().optional(),
+    medicalConditions: z.string().optional(),
+  }),
+  locale: z.string().optional(),
+});
