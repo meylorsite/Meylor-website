@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { adminApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff, GripVertical, ImagePlus, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff, GripVertical, ImagePlus, Check, FileText, Download, Calendar } from 'lucide-react';
 
 interface Field {
   key: string;
@@ -47,6 +47,11 @@ export default function AdminCrud({
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<any>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportFrom, setExportFrom] = useState('');
+  const [exportTo, setExportTo] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!accessToken) return;
@@ -165,6 +170,108 @@ export default function AdminCrud({
       fetchData();
     } catch {
       toast.error('Update failed');
+    }
+  };
+
+  const formatCellForCSV = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (Array.isArray(value)) return value.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v))).join(' | ');
+    if (typeof value === 'object') {
+      // Mongoose populated ObjectId
+      if (value._id) {
+        return String(value.titleEn || value.nameEn || value.email || value._id);
+      }
+      return JSON.stringify(value);
+    }
+    const str = String(value);
+    if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) return d.toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+    return str;
+  };
+
+  const csvEscape = (s: string) => {
+    if (s == null) return '';
+    const v = String(s);
+    if (/[",\n\r]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+
+  const downloadExport = async () => {
+    if (!accessToken) return;
+    setExporting(true);
+    try {
+      // Fetch ALL items (paginate if needed; backend returns up to ~200 per page w/o limit, fallback to repeated calls)
+      const params = new URLSearchParams();
+      params.set('page', '1');
+      params.set('limit', '5000'); // large enough for a school
+      const res = await adminApi.getAll(resource, accessToken, params.toString());
+      let rows: any[] = Array.isArray(res.data) ? res.data : (res.data?.applications || res.data?.items || []);
+
+      // Filter by date range (createdAt or publishedAt or date)
+      if (exportFrom || exportTo) {
+        const from = exportFrom ? new Date(exportFrom).getTime() : 0;
+        const to = exportTo ? new Date(exportTo).getTime() + 86400000 : Infinity; // inclusive of end day
+        rows = rows.filter((r: any) => {
+          const raw = r.createdAt || r.publishedAt || r.date || r.updatedAt;
+          const t = raw ? new Date(raw).getTime() : 0;
+          return t >= from && t <= to;
+        });
+      }
+
+      if (rows.length === 0) {
+        toast.error('No records match the selected range');
+        return;
+      }
+
+      // Build columns from field definitions + common meta fields
+      const columnKeys: string[] = [];
+      const columnLabels: string[] = [];
+      fields.forEach((f) => {
+        if (f.key === 'password') return;
+        if (f.bilingual) {
+          columnKeys.push(`${f.key}En`);
+          columnLabels.push(`${f.label} (EN)`);
+          columnKeys.push(`${f.key}Ar`);
+          columnLabels.push(`${f.label} (AR)`);
+        } else {
+          columnKeys.push(f.key);
+          columnLabels.push(f.label);
+        }
+      });
+      // Always include timestamps
+      if (!columnKeys.includes('createdAt')) {
+        columnKeys.push('createdAt');
+        columnLabels.push('Submitted At');
+      }
+
+      const header = columnLabels.map(csvEscape).join(',');
+      const body = rows
+        .map((row) => columnKeys.map((k) => csvEscape(formatCellForCSV(row[k]))).join(','))
+        .join('\n');
+
+      // BOM for Excel UTF-8 compatibility (Arabic support)
+      const csv = '﻿' + header + '\n' + body;
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const fromStr = exportFrom || 'all';
+      const toStr = exportTo || 'all';
+      a.href = url;
+      a.download = `${resource}-${fromStr}-to-${toStr}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success(`Exported ${rows.length} record${rows.length === 1 ? '' : 's'}`);
+      setExportOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || 'Export failed');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -433,6 +540,13 @@ export default function AdminCrud({
               className="rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-accent focus:outline-none"
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setExportOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
+          >
+            <Download className="h-4 w-4" /> Export
+          </button>
           {canCreate && !readOnly && (
             <button onClick={openCreate} className="btn-primary gap-2 text-sm">
               <Plus className="h-4 w-4" /> Add New
@@ -498,6 +612,14 @@ export default function AdminCrud({
                   })}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setViewing(item)}
+                        className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-primary"
+                        title="View details"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </button>
                       {'isApproved' in item ? (
                         <button
                           type="button"
@@ -612,6 +734,197 @@ export default function AdminCrud({
           </div>
         );
       })()}
+
+      {/* View Details Modal */}
+      {viewing && (() => {
+        const entries: { label: string; value: any; wide?: boolean }[] = [];
+        fields.forEach((f) => {
+          if (f.key === 'password') return;
+          if (f.bilingual) {
+            entries.push({ label: `${f.label} (EN)`, value: viewing[`${f.key}En`], wide: f.type === 'textarea' });
+            entries.push({ label: `${f.label} (AR)`, value: viewing[`${f.key}Ar`], wide: f.type === 'textarea' });
+          } else if (f.type === 'media-gallery') {
+            entries.push({ label: f.label, value: viewing[f.key], wide: true });
+          } else {
+            entries.push({ label: f.label, value: viewing[f.key], wide: f.type === 'textarea' });
+          }
+        });
+        if (viewing.createdAt) entries.push({ label: 'Submitted At', value: viewing.createdAt });
+        if (viewing.updatedAt) entries.push({ label: 'Last Updated', value: viewing.updatedAt });
+
+        const renderValue = (val: any, field: Field | undefined) => {
+          if (val === null || val === undefined || val === '') return <span className="text-gray-300">—</span>;
+          if (typeof val === 'boolean') return <span className={val ? 'text-success' : 'text-gray-400'}>{val ? 'Yes' : 'No'}</span>;
+          if (Array.isArray(val)) {
+            if (field?.type === 'media-gallery') {
+              return (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {val.map((m: any, i: number) => (
+                    <div key={i} className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+                      {m.type === 'image' && m.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.url} alt={m.captionEn || ''} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">{m.type || 'file'}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            }
+            return <span>{val.join(', ')}</span>;
+          }
+          if (typeof val === 'object') {
+            if (val._id) return <span>{val.titleEn || val.nameEn || val.email || val._id}</span>;
+            return <span className="text-xs text-gray-500">{JSON.stringify(val)}</span>;
+          }
+          const str = String(val);
+          if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) return <span>{d.toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>;
+          }
+          if (/^https?:\/\//.test(str)) return <a href={str} target="_blank" rel="noopener noreferrer" className="break-all text-accent hover:underline">{str}</a>;
+          return <span className="whitespace-pre-wrap">{str}</span>;
+        };
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-12">
+            <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-gray-100 p-5">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Details</h2>
+                  <p className="text-xs text-gray-400">ID: {viewing._id}</p>
+                </div>
+                <button type="button" onClick={() => setViewing(null)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100" title="Close">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="max-h-[70vh] overflow-y-auto p-5">
+                <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                  {entries.map((e, i) => {
+                    const field = fields.find((f) => f.label === e.label || f.label + ' (EN)' === e.label || f.label + ' (AR)' === e.label);
+                    return (
+                      <div key={i} className={e.wide ? 'sm:col-span-2' : ''}>
+                        <dt className="text-xs font-semibold uppercase tracking-wider text-gray-400">{e.label}</dt>
+                        <dd className="mt-1 text-sm text-gray-800">{renderValue(e.value, field)}</dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </div>
+              <div className="flex items-center justify-end gap-2 border-t border-gray-100 p-4">
+                {canEdit && !readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => { const item = viewing; setViewing(null); openEdit(item); }}
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <Pencil className="h-4 w-4" /> Edit
+                  </button>
+                )}
+                <button type="button" onClick={() => setViewing(null)} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Export Modal */}
+      {exportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 p-5">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                <Download className="h-5 w-5 text-primary" /> Export to CSV
+              </h2>
+              <button type="button" onClick={() => setExportOpen(false)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100" title="Close">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4 p-5">
+              <p className="text-xs text-gray-500">
+                Export {title.toLowerCase()} as a CSV file (opens in Excel). Leave dates empty to export everything.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="export-from" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <Calendar className="mr-1 inline h-3 w-3" /> From
+                  </label>
+                  <input
+                    id="export-from"
+                    type="date"
+                    value={exportFrom}
+                    onChange={(e) => setExportFrom(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="export-to" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <Calendar className="mr-1 inline h-3 w-3" /> To
+                  </label>
+                  <input
+                    id="export-to"
+                    type="date"
+                    value={exportTo}
+                    onChange={(e) => setExportTo(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setExportFrom(''); setExportTo(''); }}
+                  className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                >
+                  All time
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const now = new Date();
+                    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    setExportFrom(start.toISOString().slice(0, 10));
+                    setExportTo(now.toISOString().slice(0, 10));
+                  }}
+                  className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                >
+                  This month
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const now = new Date();
+                    const start = new Date(now);
+                    start.setDate(start.getDate() - 30);
+                    setExportFrom(start.toISOString().slice(0, 10));
+                    setExportTo(now.toISOString().slice(0, 10));
+                  }}
+                  className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                >
+                  Last 30 days
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-gray-100 p-4">
+              <button type="button" onClick={() => setExportOpen(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={downloadExport}
+                disabled={exporting}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50"
+              >
+                <Download className="h-4 w-4" />
+                {exporting ? 'Generating…' : 'Download CSV'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
