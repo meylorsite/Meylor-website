@@ -39,7 +39,9 @@ export default function AdminCrud({
   const { accessToken } = useAuthStore();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('-createdAt');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
@@ -53,6 +55,15 @@ export default function AdminCrud({
   const [exportTo, setExportTo] = useState('');
   const [exporting, setExporting] = useState(false);
 
+  // Debounce the search input so we don't hit the API on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
   const fetchData = useCallback(async () => {
     if (!accessToken) return;
     setLoading(true);
@@ -60,6 +71,7 @@ export default function AdminCrud({
       const params = new URLSearchParams();
       params.set('page', String(page));
       params.set('limit', '20');
+      params.set('sort', sort);
       if (search) params.set('search', search);
       const res = await adminApi.getAll(resource, accessToken, params.toString());
       setItems(res.data || []);
@@ -69,7 +81,7 @@ export default function AdminCrud({
     } finally {
       setLoading(false);
     }
-  }, [accessToken, resource, page, search]);
+  }, [accessToken, resource, page, search, sort]);
 
   useEffect(() => {
     fetchData();
@@ -529,21 +541,46 @@ export default function AdminCrud({
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-accent focus:outline-none"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-48 rounded-lg border border-gray-300 py-2 pl-9 pr-8 text-sm focus:border-accent focus:outline-none sm:w-56"
             />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => setSearchInput('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100"
+                title="Clear"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
           </div>
+          <select
+            value={sort}
+            onChange={(e) => { setSort(e.target.value); setPage(1); }}
+            className="rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-8 text-sm focus:border-accent focus:outline-none"
+            title="Sort"
+          >
+            <option value="-createdAt">Newest first</option>
+            <option value="createdAt">Oldest first</option>
+            <option value="order">Order (asc)</option>
+            <option value="-order">Order (desc)</option>
+            <option value="nameEn">Name A–Z</option>
+            <option value="-nameEn">Name Z–A</option>
+            <option value="titleEn">Title A–Z</option>
+            <option value="-titleEn">Title Z–A</option>
+          </select>
           <button
             type="button"
             onClick={() => setExportOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
           >
             <Download className="h-4 w-4" /> Export
           </button>
