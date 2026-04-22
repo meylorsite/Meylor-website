@@ -63,6 +63,8 @@ export const publicApi = {
     fetchApi('/public/applications', { method: 'POST', body: JSON.stringify(data) }),
   submitAdmission: (data: any, token?: string) =>
     fetchApi('/public/admissions', { method: 'POST', body: JSON.stringify(data), token }),
+  submitTestimonial: (data: any, token?: string) =>
+    fetchApi('/public/testimonials', { method: 'POST', body: JSON.stringify(data), token }),
   subscribeNewsletter: (email: string) =>
     fetchApi('/public/newsletter', { method: 'POST', body: JSON.stringify({ email }) }),
 };

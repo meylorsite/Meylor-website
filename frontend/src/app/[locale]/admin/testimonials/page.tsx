@@ -12,7 +12,9 @@ export default function AdminTestimonials() {
         { key: 'content', label: 'Content', bilingual: true, type: 'textarea', required: true },
         { key: 'avatarUrl', label: 'Avatar URL', type: 'url' },
         { key: 'rating', label: 'Rating (1-5)', type: 'number', defaultValue: 5, showInTable: true },
-        { key: 'order', label: 'Order', type: 'number', showInTable: true },
+        { key: 'submitterEmail', label: 'Submitted By (Email)' },
+        { key: 'isApproved', label: 'Approved', type: 'boolean', defaultValue: false, showInTable: true },
+        { key: 'order', label: 'Order', type: 'number' },
         { key: 'isVisible', label: 'Visible', type: 'boolean', defaultValue: true, showInTable: true },
       ]}
     />

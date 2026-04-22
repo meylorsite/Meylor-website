@@ -84,6 +84,8 @@ app.use('/api/public/complaints', formLimiter);
 app.use('/api/public/applications', formLimiter);
 app.use('/api/public/admissions', formLimiter);
 app.use('/api/public/newsletter', formLimiter);
+// Limit only POST for testimonials so visitors can still GET the list freely
+app.post('/api/public/testimonials', formLimiter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

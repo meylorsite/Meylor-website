@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { adminApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff, GripVertical, ImagePlus } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff, GripVertical, ImagePlus, Check } from 'lucide-react';
 
 interface Field {
   key: string;
@@ -151,6 +151,17 @@ export default function AdminCrud({
     if (!field) return;
     try {
       await adminApi.update(resource, item._id, { [field]: !item[field] }, accessToken);
+      fetchData();
+    } catch {
+      toast.error('Update failed');
+    }
+  };
+
+  const toggleApproval = async (item: any) => {
+    if (!accessToken) return;
+    try {
+      await adminApi.update(resource, item._id, { isApproved: !item.isApproved }, accessToken);
+      toast.success(item.isApproved ? 'Approval revoked' : 'Approved — now visible on site');
       fetchData();
     } catch {
       toast.error('Update failed');
@@ -487,8 +498,19 @@ export default function AdminCrud({
                   })}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      {'isApproved' in item ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleApproval(item)}
+                          className={`rounded-lg p-2 ${item.isApproved ? 'text-success hover:bg-success/10' : 'text-amber hover:bg-amber/10'}`}
+                          title={item.isApproved ? 'Approved — click to revoke' : 'Pending — click to approve'}
+                        >
+                          <Check className="h-4 w-4" />
+                        </button>
+                      ) : null}
                       {'isVisible' in item || 'isPublished' in item || 'isOpen' in item ? (
                         <button
+                          type="button"
                           onClick={() => toggleVisibility(item)}
                           className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                           title="Toggle visibility"

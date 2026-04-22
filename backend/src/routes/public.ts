@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
+import { ApiError } from '../utils/ApiError';
 import { validate } from '../middleware/validate';
 import {
   contactMessageSchema,
@@ -101,8 +102,45 @@ router.get(
 router.get(
   '/testimonials',
   asyncHandler(async (_req: Request, res: Response) => {
-    const data = await Testimonial.find({ isVisible: true }).sort('order');
+    const data = await Testimonial.find({ isVisible: true, isApproved: true }).sort('order -createdAt');
     res.json({ success: true, data });
+  })
+);
+
+// Public review submission — requires admin approval before going live
+router.post(
+  '/testimonials',
+  optionalAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { nameEn, nameAr, roleEn, roleAr, contentEn, contentAr, rating, avatarUrl, email } = req.body || {};
+
+    if (!nameEn || !contentEn) {
+      throw new ApiError(400, 'Name and content are required');
+    }
+    if (String(contentEn).trim().length < 10) {
+      throw new ApiError(400, 'Review content must be at least 10 characters');
+    }
+
+    const doc = await Testimonial.create({
+      nameEn: String(nameEn).trim(),
+      nameAr: nameAr ? String(nameAr).trim() : '',
+      roleEn: roleEn ? String(roleEn).trim() : '',
+      roleAr: roleAr ? String(roleAr).trim() : '',
+      contentEn: String(contentEn).trim(),
+      contentAr: contentAr ? String(contentAr).trim() : '',
+      avatarUrl: avatarUrl ? String(avatarUrl).trim() : '',
+      rating: Math.min(5, Math.max(1, Number(rating) || 5)),
+      isApproved: false,
+      isVisible: true,
+      submittedBy: req.user?._id,
+      submitterEmail: email ? String(email).trim() : (req.user?.email || ''),
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Thank you! Your review will appear after approval.',
+      data: { id: doc._id },
+    });
   })
 );
 

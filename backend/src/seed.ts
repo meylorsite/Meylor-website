@@ -432,6 +432,7 @@ const seed = async () => {
         "فاقت مدرسة ميلور توقعاتنا. المعلمون متفانون والمرافق عالمية المستوى وأطفالنا يزدهرون أكاديميًا واجتماعيًا.",
       rating: 5,
       order: 0,
+      isApproved: true,
     },
     {
       nameEn: "Sara Al-Harbi",
@@ -444,6 +445,7 @@ const seed = async () => {
         "البرنامج ثنائي اللغة استثنائي. ابنتي الآن تتحدث العربية والإنجليزية بطلاقة، وثقتها بنفسها نمت بشكل كبير.",
       rating: 5,
       order: 1,
+      isApproved: true,
     },
     {
       nameEn: "Mohammed Al-Zahrani",
@@ -456,6 +458,7 @@ const seed = async () => {
         "أعدتني ميلور للجامعة بشكل أفضل مما كنت أتخيل. مهارات التفكير النقدي وفرص القيادة شكّلت شخصيتي اليوم.",
       rating: 5,
       order: 2,
+      isApproved: true,
     },
     {
       nameEn: "Fatima Al-Qahtani",
@@ -468,6 +471,7 @@ const seed = async () => {
         "الرعاية والاهتمام الذي يحظى به كل طالب في ميلور رائع. إنها حقًا بمثابة عائلة ثانية لأطفالنا.",
       rating: 5,
       order: 3,
+      isApproved: true,
     },
     {
       nameEn: "Khalid Al-Otaibi",
@@ -480,6 +484,7 @@ const seed = async () => {
         "مدرسة متميزة بتوازن مثالي بين الأكاديميات والأنشطة اللاصفية. برنامج العلوم والتكنولوجيا مثير للإعجاب بشكل خاص.",
       rating: 5,
       order: 4,
+      isApproved: true,
     },
     {
       nameEn: "Noura Al-Shehri",
@@ -492,6 +497,7 @@ const seed = async () => {
         "كمعلمة، العمل في ميلور شرف كبير. المدرسة تدعم الابتكار في التعليم وتوفر موارد تُحدث فرقًا حقيقيًا.",
       rating: 5,
       order: 5,
+      isApproved: true,
     },
   ]);
   console.log("✓ Testimonials created");
