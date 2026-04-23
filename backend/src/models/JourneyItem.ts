@@ -18,11 +18,7 @@ const journeyItemSchema = new Schema<IJourneyItem>(
     titleAr: { type: String, required: true },
     descriptionEn: { type: String, default: '' },
     descriptionAr: { type: String, default: '' },
-    date: { type: String, default: '' },
-    beforeImageUrl: { type: String, default: '' },
-    afterImageUrl: { type: String, default: '' },
-    order: { type: Number, default: 0 },
-    isVisible: { type: Boolean, default: true },
+
   },
   { timestamps: true }
 );
