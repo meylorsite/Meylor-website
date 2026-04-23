@@ -25,7 +25,7 @@ const fallbackTeam = [
   { nameEn: 'Mrs. Hana Al-Shehri', nameAr: 'أ. هناء الشهري', roleEn: 'Head of Admissions', roleAr: 'رئيسة القبول والتسجيل', imageUrl: 'https://images.pexels.com/photos/1181391/pexels-photo-1181391.jpeg?auto=compress&cs=tinysrgb&w=400' },
 ];
 
-const coreValues = [
+const fallbackCoreValues = [
   { icon: Star, titleEn: 'Excellence', titleAr: 'التميّز', descEn: 'Striving for the highest standards in everything we do.', descAr: 'السعي لأعلى المعايير في كل ما نقوم به.' },
   { icon: Lightbulb, titleEn: 'Innovation', titleAr: 'الابتكار', descEn: 'Embracing creativity and modern approaches to education.', descAr: 'تبنّي الإبداع والمناهج الحديثة في التعليم.' },
   { icon: Shield, titleEn: 'Integrity', titleAr: 'النزاهة', descEn: 'Building trust through honesty, transparency and accountability.', descAr: 'بناء الثقة من خلال الصدق والشفافية والمسؤولية.' },
@@ -34,7 +34,7 @@ const coreValues = [
   { icon: Heart, titleEn: 'Respect', titleAr: 'الاحترام', descEn: 'Valuing diversity, dignity, and mutual respect.', descAr: 'تقدير التنوع والكرامة والاحترام المتبادل.' },
 ];
 
-const milestones = [
+const fallbackMilestones = [
   { year: '2014', titleEn: 'Founded', titleAr: 'التأسيس', descEn: 'MEYLOR International School was established in Jeddah.', descAr: 'تأسست مدرسة ميلور العالمية في جدة.' },
   { year: '2016', titleEn: 'First Graduation', titleAr: 'أول تخريج', descEn: 'Our first cohort of students graduated with distinction.', descAr: 'تخرّج أول فوج من طلابنا بتفوّق.' },
   { year: '2019', titleEn: 'Expansion', titleAr: 'التوسّع', descEn: 'New state-of-the-art campus wing opened with innovation hub.', descAr: 'افتتاح جناح جديد بأحدث التقنيات ومركز الابتكار.' },
@@ -42,19 +42,70 @@ const milestones = [
   { year: '2025', titleEn: '1200+ Students', titleAr: '١٢٠٠+ طالب', descEn: 'Growing strong with over 1,200 students and 150+ faculty.', descAr: 'نمو قوي مع أكثر من ١٢٠٠ طالب و١٥٠+ من أعضاء الهيئة التعليمية.' },
 ];
 
+const fallbackFeatures = [
+  { icon: BookOpen, titleEn: 'Bilingual Curriculum', titleAr: 'منهج ثنائي اللغة', descEn: 'Combining the best of Arabic and international curricula.', descAr: 'الجمع بين أفضل المناهج العربية والدولية.' },
+  { icon: Award, titleEn: 'Qualified Faculty', titleAr: 'هيئة تعليمية مؤهلة', descEn: '150+ internationally certified teachers and specialists.', descAr: '١٥٠+ معلّم ومتخصص معتمد دولياً.' },
+  { icon: Lightbulb, titleEn: 'Innovation Hub', titleAr: 'مركز الابتكار', descEn: 'State-of-the-art robotics, coding, and STEM facilities.', descAr: 'أحدث مرافق الروبوتات والبرمجة وعلوم STEM.' },
+  { icon: Shield, titleEn: 'Safe Environment', titleAr: 'بيئة آمنة', descEn: 'A nurturing, secure campus designed for student wellbeing.', descAr: 'حرم مدرسي آمن ومصمّم لرفاهية الطلاب.' },
+];
+
+const coreValueIcons = [Star, Lightbulb, Shield, Users, GraduationCap, Heart];
+const featureIcons = [BookOpen, Award, Lightbulb, Shield];
+
 interface AboutPageClientProps {
   sections: any[];
   boardMembers?: any[];
   teamMembers?: any[];
+  coreValues?: any[];
+  milestones?: any[];
+  features?: any[];
   locale: string;
 }
 
-export default function AboutPageClient({ sections, boardMembers = [], teamMembers = [], locale }: AboutPageClientProps) {
+export default function AboutPageClient({
+  sections,
+  boardMembers = [],
+  teamMembers = [],
+  coreValues = [],
+  milestones = [],
+  features = [],
+  locale,
+}: AboutPageClientProps) {
   const t = useTranslations('about');
   const isRTL = locale === 'ar';
 
   const board = boardMembers.length > 0 ? boardMembers : fallbackBoard;
   const team = teamMembers.length > 0 ? teamMembers : fallbackTeam;
+
+  const coreValuesList = coreValues.length > 0
+    ? coreValues.map((item: any, i: number) => ({
+        icon: coreValueIcons[i] || coreValueIcons[i % coreValueIcons.length] || Star,
+        titleEn: item.titleEn,
+        titleAr: item.titleAr,
+        descEn: item.contentEn,
+        descAr: item.contentAr,
+      }))
+    : fallbackCoreValues;
+
+  const milestonesList = milestones.length > 0
+    ? milestones.map((item: any) => ({
+        year: item.subtitleEn || item.subtitleAr || '',
+        titleEn: item.titleEn,
+        titleAr: item.titleAr,
+        descEn: item.contentEn,
+        descAr: item.contentAr,
+      }))
+    : fallbackMilestones;
+
+  const featuresList = features.length > 0
+    ? features.map((item: any, i: number) => ({
+        icon: featureIcons[i] || featureIcons[i % featureIcons.length] || BookOpen,
+        titleEn: item.titleEn,
+        titleAr: item.titleAr,
+        descEn: item.contentEn,
+        descAr: item.contentAr,
+      }))
+    : fallbackFeatures;
 
   return (
     <>
@@ -172,7 +223,7 @@ export default function AboutPageClient({ sections, boardMembers = [], teamMembe
             </h2>
           </motion.div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {coreValues.map((val, i) => (
+            {coreValuesList.map((val, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -204,7 +255,7 @@ export default function AboutPageClient({ sections, boardMembers = [], teamMembe
           </motion.div>
           <div className="relative mx-auto max-w-3xl">
             <div className="absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 bg-white/20" />
-            {milestones.map((m, i) => (
+            {milestonesList.map((m, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -221,7 +272,7 @@ export default function AboutPageClient({ sections, boardMembers = [], teamMembe
                   </div>
                 </div>
                 <div className="absolute left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border-4 border-primary bg-accent text-xs font-bold text-white">
-                  {m.year.slice(-2)}
+                  {(m.year || '').slice(-2)}
                 </div>
                 <div className="w-5/12" />
               </motion.div>
@@ -324,12 +375,7 @@ export default function AboutPageClient({ sections, boardMembers = [], teamMembe
             </h2>
           </motion.div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: BookOpen, titleEn: 'Bilingual Curriculum', titleAr: 'منهج ثنائي اللغة', descEn: 'Combining the best of Arabic and international curricula.', descAr: 'الجمع بين أفضل المناهج العربية والدولية.' },
-              { icon: Award, titleEn: 'Qualified Faculty', titleAr: 'هيئة تعليمية مؤهلة', descEn: '150+ internationally certified teachers and specialists.', descAr: '١٥٠+ معلّم ومتخصص معتمد دولياً.' },
-              { icon: Lightbulb, titleEn: 'Innovation Hub', titleAr: 'مركز الابتكار', descEn: 'State-of-the-art robotics, coding, and STEM facilities.', descAr: 'أحدث مرافق الروبوتات والبرمجة وعلوم STEM.' },
-              { icon: Shield, titleEn: 'Safe Environment', titleAr: 'بيئة آمنة', descEn: 'A nurturing, secure campus designed for student wellbeing.', descAr: 'حرم مدرسي آمن ومصمّم لرفاهية الطلاب.' },
-            ].map((item, i) => (
+            {featuresList.map((item, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}

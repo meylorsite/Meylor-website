@@ -32,27 +32,27 @@ async function fetchApi<T = any>(endpoint: string, options: FetchOptions = {}): 
 
 // ─── Public API ───────────────────────────────────────────
 export const publicApi = {
-  getSettings: () => fetchApi('/public/settings', { next: { revalidate: 60 } }),
+  getSettings: () => fetchApi('/public/settings', { next: { revalidate: 10 } }),
   getSections: (page?: string) =>
-    fetchApi(`/public/sections${page ? `?page=${page}` : ''}`, { next: { revalidate: 30 } }),
-  getPrograms: () => fetchApi('/public/programs', { next: { revalidate: 60 } }),
-  getProgram: (slug: string) => fetchApi(`/public/programs/${slug}`, { next: { revalidate: 60 } }),
-  getFacilities: () => fetchApi('/public/facilities', { next: { revalidate: 60 } }),
-  getTestimonials: () => fetchApi('/public/testimonials', { next: { revalidate: 60 } }),
+    fetchApi(`/public/sections${page ? `?page=${page}` : ''}`, { next: { revalidate: 10 } }),
+  getPrograms: () => fetchApi('/public/programs', { next: { revalidate: 10 } }),
+  getProgram: (slug: string) => fetchApi(`/public/programs/${slug}`, { next: { revalidate: 10 } }),
+  getFacilities: () => fetchApi('/public/facilities', { next: { revalidate: 10 } }),
+  getTestimonials: () => fetchApi('/public/testimonials', { next: { revalidate: 10 } }),
   getNews: (page = 1, limit = 12) =>
-    fetchApi(`/public/news?page=${page}&limit=${limit}`, { next: { revalidate: 30 } }),
-  getNewsPost: (slug: string) => fetchApi(`/public/news/${slug}`, { next: { revalidate: 30 } }),
-  getGallery: () => fetchApi('/public/gallery', { next: { revalidate: 30 } }),
-  getGalleryActivity: (slug: string) => fetchApi(`/public/gallery/${slug}`, { next: { revalidate: 30 } }),
-  getJourney: () => fetchApi('/public/journey', { next: { revalidate: 60 } }),
-  getPricing: () => fetchApi('/public/pricing', { next: { revalidate: 60 } }),
-  getJobs: () => fetchApi('/public/jobs', { next: { revalidate: 30 } }),
-  getJob: (slug: string) => fetchApi(`/public/jobs/${slug}`, { next: { revalidate: 30 } }),
-  getStats: () => fetchApi('/public/stats', { next: { revalidate: 60 } }),
+    fetchApi(`/public/news?page=${page}&limit=${limit}`, { next: { revalidate: 10 } }),
+  getNewsPost: (slug: string) => fetchApi(`/public/news/${slug}`, { next: { revalidate: 10 } }),
+  getGallery: () => fetchApi('/public/gallery', { next: { revalidate: 10 } }),
+  getGalleryActivity: (slug: string) => fetchApi(`/public/gallery/${slug}`, { next: { revalidate: 10 } }),
+  getJourney: () => fetchApi('/public/journey', { next: { revalidate: 10 } }),
+  getPricing: () => fetchApi('/public/pricing', { next: { revalidate: 10 } }),
+  getJobs: () => fetchApi('/public/jobs', { next: { revalidate: 10 } }),
+  getJob: (slug: string) => fetchApi(`/public/jobs/${slug}`, { next: { revalidate: 10 } }),
+  getStats: () => fetchApi('/public/stats', { next: { revalidate: 10 } }),
   getFAQs: (category?: string) =>
-    fetchApi(`/public/faqs${category ? `?category=${category}` : ''}`, { next: { revalidate: 60 } }),
+    fetchApi(`/public/faqs${category ? `?category=${category}` : ''}`, { next: { revalidate: 10 } }),
   getTeam: (category?: string) =>
-    fetchApi(`/public/team${category ? `?category=${category}` : ''}`, { next: { revalidate: 60 } }),
+    fetchApi(`/public/team${category ? `?category=${category}` : ''}`, { next: { revalidate: 10 } }),
 
   // Form submissions
   submitContact: (data: any) =>

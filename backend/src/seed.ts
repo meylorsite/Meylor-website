@@ -201,6 +201,24 @@ const seed = async () => {
       isVisible: true,
       page: "about",
     },
+    // ─── About Core Values ────────────────────────────
+    { key: 'value-excellence', page: 'about-values', titleEn: 'Excellence', titleAr: 'التميّز', contentEn: 'Striving for the highest standards in everything we do.', contentAr: 'السعي لأعلى المعايير في كل ما نقوم به.', order: 0, isVisible: true },
+    { key: 'value-innovation', page: 'about-values', titleEn: 'Innovation', titleAr: 'الابتكار', contentEn: 'Embracing creativity and modern approaches to education.', contentAr: 'تبنّي الإبداع والمناهج الحديثة في التعليم.', order: 1, isVisible: true },
+    { key: 'value-integrity', page: 'about-values', titleEn: 'Integrity', titleAr: 'النزاهة', contentEn: 'Building trust through honesty, transparency and accountability.', contentAr: 'بناء الثقة من خلال الصدق والشفافية والمسؤولية.', order: 2, isVisible: true },
+    { key: 'value-community', page: 'about-values', titleEn: 'Community', titleAr: 'المجتمع', contentEn: 'Fostering a caring and inclusive school community.', contentAr: 'تعزيز مجتمع مدرسي رعاية وشامل.', order: 3, isVisible: true },
+    { key: 'value-growth', page: 'about-values', titleEn: 'Growth', titleAr: 'النمو', contentEn: 'Nurturing lifelong learners who thrive beyond the classroom.', contentAr: 'رعاية متعلمين مدى الحياة يتفوقون خارج الفصل الدراسي.', order: 4, isVisible: true },
+    { key: 'value-respect', page: 'about-values', titleEn: 'Respect', titleAr: 'الاحترام', contentEn: 'Valuing diversity, dignity, and mutual respect.', contentAr: 'تقدير التنوع والكرامة والاحترام المتبادل.', order: 5, isVisible: true },
+    // ─── About Milestones ─────────────────────────────
+    { key: 'milestone-2014', page: 'about-milestones', subtitleEn: '2014', subtitleAr: '2014', titleEn: 'Founded', titleAr: 'التأسيس', contentEn: 'MEYLOR International School was established in Jeddah.', contentAr: 'تأسست مدرسة ميلور العالمية في جدة.', order: 0, isVisible: true },
+    { key: 'milestone-2016', page: 'about-milestones', subtitleEn: '2016', subtitleAr: '2016', titleEn: 'First Graduation', titleAr: 'أول تخريج', contentEn: 'Our first cohort of students graduated with distinction.', contentAr: 'تخرّج أول فوج من طلابنا بتفوّق.', order: 1, isVisible: true },
+    { key: 'milestone-2019', page: 'about-milestones', subtitleEn: '2019', subtitleAr: '2019', titleEn: 'Expansion', titleAr: 'التوسّع', contentEn: 'New state-of-the-art campus wing opened with innovation hub.', contentAr: 'افتتاح جناح جديد بأحدث التقنيات ومركز الابتكار.', order: 2, isVisible: true },
+    { key: 'milestone-2022', page: 'about-milestones', subtitleEn: '2022', subtitleAr: '2022', titleEn: 'Accreditation', titleAr: 'الاعتماد', contentEn: 'Received international accreditation for academic excellence.', contentAr: 'حصلنا على الاعتماد الدولي للتميّز الأكاديمي.', order: 3, isVisible: true },
+    { key: 'milestone-2025', page: 'about-milestones', subtitleEn: '2025', subtitleAr: '2025', titleEn: '1200+ Students', titleAr: '١٢٠٠+ طالب', contentEn: 'Growing strong with over 1,200 students and 150+ faculty.', contentAr: 'نمو قوي مع أكثر من ١٢٠٠ طالب و١٥٠+ من أعضاء الهيئة التعليمية.', order: 4, isVisible: true },
+    // ─── About Why Choose Features ────────────────────
+    { key: 'feature-curriculum', page: 'about-features', titleEn: 'Bilingual Curriculum', titleAr: 'منهج ثنائي اللغة', contentEn: 'Combining the best of Arabic and international curricula.', contentAr: 'الجمع بين أفضل المناهج العربية والدولية.', order: 0, isVisible: true },
+    { key: 'feature-faculty', page: 'about-features', titleEn: 'Qualified Faculty', titleAr: 'هيئة تعليمية مؤهلة', contentEn: '150+ internationally certified teachers and specialists.', contentAr: '١٥٠+ معلّم ومتخصص معتمد دولياً.', order: 1, isVisible: true },
+    { key: 'feature-innovation', page: 'about-features', titleEn: 'Innovation Hub', titleAr: 'مركز الابتكار', contentEn: 'State-of-the-art robotics, coding, and STEM facilities.', contentAr: 'أحدث مرافق الروبوتات والبرمجة وعلوم STEM.', order: 2, isVisible: true },
+    { key: 'feature-safe', page: 'about-features', titleEn: 'Safe Environment', titleAr: 'بيئة آمنة', contentEn: 'A nurturing, secure campus designed for student wellbeing.', contentAr: 'حرم مدرسي آمن ومصمّم لرفاهية الطلاب.', order: 3, isVisible: true },
   ]);
   console.log("✓ Sections created");
 

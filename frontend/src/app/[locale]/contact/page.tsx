@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -17,6 +17,16 @@ export default function ContactPage() {
   const [activeTab, setActiveTab] = useState<'contact' | 'complaint'>('contact');
   const [loading, setLoading] = useState(false);
   const [ticketNumber, setTicketNumber] = useState('');
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    publicApi.getSettings().then((res: any) => setSettings(res?.data || null)).catch(() => {});
+  }, []);
+
+  const schoolPhone = settings?.phone || '+966 12 000 0000';
+  const schoolEmail = settings?.email || 'info@meylor.sa';
+  const schoolAddress = (isRTL ? settings?.addressAr : settings?.addressEn) ||
+    (isRTL ? 'حي النعيم، جدة، السعودية' : 'Al-Naeem, Jeddah, KSA');
 
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [complaintForm, setComplaintForm] = useState({ category: '', priority: 'medium', name: '', email: '', phone: '', details: '', attachmentLink: '' });
@@ -70,8 +80,8 @@ export default function ContactPage() {
           transition={{ delay: 0.3 }}
           className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm text-white/60"
         >
-          <span className="flex items-center gap-2"><Phone className="h-4 w-4" /> +966 12 000 0000</span>
-          <span className="flex items-center gap-2"><Mail className="h-4 w-4" /> info@meylor.sa</span>
+          <span className="flex items-center gap-2" dir="ltr"><Phone className="h-4 w-4" /> {schoolPhone}</span>
+          <span className="flex items-center gap-2" dir="ltr"><Mail className="h-4 w-4" /> {schoolEmail}</span>
           <span className="flex items-center gap-2"><Clock className="h-4 w-4" /> {isRTL ? 'الأحد - الخميس: 7ص - 3م' : 'Sun - Thu: 7AM - 3PM'}</span>
         </motion.div>
       </PageHero>
@@ -81,9 +91,9 @@ export default function ContactPage() {
         <div className="container-custom">
           <div className="mb-12 grid gap-6 sm:grid-cols-3">
             {[
-              { icon: Phone, titleEn: 'Call Us', titleAr: 'اتصل بنا', descEn: '+966 12 000 0000', descAr: '+966 12 000 0000', color: 'bg-primary/10 text-primary' },
-              { icon: Mail, titleEn: 'Email Us', titleAr: 'راسلنا', descEn: 'info@meylor.sa', descAr: 'info@meylor.sa', color: 'bg-accent/10 text-accent' },
-              { icon: MapPin, titleEn: 'Visit Us', titleAr: 'زُرنا', descEn: 'Al-Naeem, Jeddah, KSA', descAr: 'حي النعيم، جدة، السعودية', color: 'bg-success/10 text-success' },
+              { icon: Phone, titleEn: 'Call Us', titleAr: 'اتصل بنا', descEn: schoolPhone, descAr: schoolPhone, color: 'bg-primary/10 text-primary' },
+              { icon: Mail, titleEn: 'Email Us', titleAr: 'راسلنا', descEn: schoolEmail, descAr: schoolEmail, color: 'bg-accent/10 text-accent' },
+              { icon: MapPin, titleEn: 'Visit Us', titleAr: 'زُرنا', descEn: schoolAddress, descAr: schoolAddress, color: 'bg-success/10 text-success' },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -126,7 +136,7 @@ export default function ContactPage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4">
                   <h4 className="mb-2 text-sm font-semibold">{isRTL ? 'للحالات الطارئة' : 'Emergency'}</h4>
-                  <a href="tel:+966120000000" className="text-lg font-bold text-accent">+966 12 000 0000</a>
+                  <a href={`tel:${schoolPhone.replace(/\s/g, '')}`} className="text-lg font-bold text-accent" dir="ltr">{schoolPhone}</a>
                 </div>
               </div>
 
