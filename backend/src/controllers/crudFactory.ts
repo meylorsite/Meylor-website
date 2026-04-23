@@ -19,17 +19,7 @@ const SEARCH_EXCLUDED_PATHS = new Set([
   'updatedAt',
 ]);
 
-const buildSearchFilter = (Model: Model<any>, search: string) => {
-  const paths = (Model.schema as any).paths || {};
-  const stringPaths = Object.keys(paths).filter((p) => {
-    if (SEARCH_EXCLUDED_PATHS.has(p)) return false;
-    const def = paths[p];
-    return def?.instance === 'String';
-  });
-  if (stringPaths.length === 0) return null;
-  const regex = { $regex: search, $options: 'i' };
-  return { $or: stringPaths.map((p) => ({ [p]: regex })) };
-};
+
 
 export const getAll = (Model: Model<any>, options: GetAllOptions = {}) =>
   asyncHandler(async (req: Request, res: Response) => {
@@ -46,23 +36,7 @@ export const getAll = (Model: Model<any>, options: GetAllOptions = {}) =>
       if (searchFilter) Object.assign(filter, searchFilter);
     }
 
-    if (req.query.isVisible !== undefined) {
-      filter.isVisible = req.query.isVisible === 'true';
-    }
-    if (req.query.isPublished !== undefined) {
-      filter.isPublished = req.query.isPublished === 'true';
-    }
-    if (req.query.isOpen !== undefined) {
-      filter.isOpen = req.query.isOpen === 'true';
-    }
-    if (req.query.isApproved !== undefined) {
-      filter.isApproved = req.query.isApproved === 'true';
-    }
-    if (req.query.status) {
-      filter.status = req.query.status;
-    }
-    if (req.query.page_filter) {
-      filter.page = req.query.page_filter;
+
     }
 
     let query = Model.find(filter).sort(sort).skip(skip).limit(limit);
@@ -75,19 +49,6 @@ export const getAll = (Model: Model<any>, options: GetAllOptions = {}) =>
       Model.countDocuments(filter),
     ]);
 
-    res.json({
-      success: true,
-      data,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-    });
-  });
-
-export const getOne = (Model: Model<any>) =>
-  asyncHandler(async (req: Request, res: Response) => {
-    const doc = await Model.findById(req.params.id);
-    if (!doc) throw new ApiError(404, 'Document not found');
-    res.json({ success: true, data: doc });
-  });
 
 export const getBySlug = (Model: Model<any>) =>
   asyncHandler(async (req: Request, res: Response) => {
