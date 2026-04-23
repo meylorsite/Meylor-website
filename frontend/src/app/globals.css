@@ -10,32 +10,6 @@
   body {
     @apply antialiased text-gray-900;
   }
-
-  [dir='rtl'] {
-    font-family: var(--font-alexandria), system-ui, sans-serif;
-    line-height: 1.8;
-  }
-
-  [dir='rtl'] h1,
-  [dir='rtl'] h2,
-  [dir='rtl'] h3,
-  [dir='rtl'] h4 {
-    line-height: 1.4 !important;
-    padding-bottom: 0.1em;
-  }
-
-  [dir='rtl'] p,
-  [dir='rtl'] span,
-  [dir='rtl'] a,
-  [dir='rtl'] li {
-    padding-bottom: 0.05em;
-  }
-
-  [dir='ltr'] {
-    font-family: var(--font-alexandria), system-ui, sans-serif;
-  }
-}
-
 @layer components {
   .container-custom {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
@@ -49,54 +23,6 @@
     @apply bg-primary text-white;
   }
 
-  .section-light {
-    @apply bg-white text-gray-900;
-  }
-
-  .section-gray {
-    @apply bg-gray-50 text-gray-900;
-  }
-
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-primary-dark hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  .btn-accent {
-    @apply inline-flex items-center justify-center rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-accent-dark hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-accent/50;
-  }
-
-  .btn-outline {
-    @apply inline-flex items-center justify-center rounded-lg border-2 border-primary px-5 py-2.5 text-sm font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-white focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  .card {
-    @apply rounded-2xl bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md;
-  }
-
-  .input-field {
-    @apply w-full rounded-lg border border-gray-300 px-4 py-3 text-sm transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent;
-  }
-
-  .gradient-text {
-    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
-  }
-
-  .blob-shape {
-    @apply absolute rounded-full opacity-20 blur-3xl;
-  }
-}
-
-/* Swiper base imports are handled per-component. Global overrides below. */
-
-/* Swiper pagination */
-.swiper-pagination-bullet {
-  background: rgba(255, 255, 255, 0.4) !important;
-  opacity: 1 !important;
-  width: 8px !important;
-  height: 8px !important;
-  transition: all 0.3s ease !important;
-}
-.swiper-pagination-bullet-active {
   background: #01A9E4 !important;
   width: 24px !important;
   border-radius: 4px !important;
@@ -104,40 +30,4 @@
 
 /* Light background pagination */
 .swiper-light .swiper-pagination-bullet {
-  background: rgba(0, 58, 131, 0.2) !important;
-}
-.swiper-light .swiper-pagination-bullet-active {
-  background: #01A9E4 !important;
-}
-
-/* Swiper progress bar */
-.swiper-pagination-progressbar {
-  background: rgba(0, 0, 0, 0.08) !important;
-  height: 3px !important;
-  bottom: 0 !important;
-  top: auto !important;
-}
-.swiper-pagination-progressbar-fill {
-  background: #01A9E4 !important;
-}
-
-/* Swiper navigation */
-.swiper-nav-btn {
-  @apply flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-white/20;
-}
-.swiper-nav-btn-light {
-  @apply flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition-all hover:bg-gray-50 hover:text-primary;
-}
-
-/* Skeleton loading */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 0.5rem;
-}
+  back
