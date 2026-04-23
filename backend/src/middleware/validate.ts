@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodSchema } from 'zod';
 
 export const validate = (schema: ZodSchema) => {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (req: Reqponse, next: NextFunction) => {
     try {
-      schema.parse(req.body);
+      schema.body);
       next();
     } catch (error) {
       next(error);
