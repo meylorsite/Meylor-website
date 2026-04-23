@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
 import { adminApi } from '@/lib/api';
 import { Save, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
@@ -15,6 +16,8 @@ interface Child {
 }
 
 export default function ProfilePage() {
+  const { locale } = useParams() as { locale: string };
+  const isAr = locale === 'ar';
   const { user, accessToken, initAuth } = useAuthStore();
 
   // Profile form
@@ -26,6 +29,7 @@ export default function ProfilePage() {
   const [children, setChildren] = useState<Child[]>([]);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMsg, setProfileMsg] = useState('');
+  const [profileMsgOk, setProfileMsgOk] = useState(false);
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState('');
@@ -35,6 +39,7 @@ export default function ProfilePage() {
   const [showNewPw, setShowNewPw] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [pwMsg, setPwMsg] = useState('');
+  const [pwMsgOk, setPwMsgOk] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -61,6 +66,7 @@ export default function ProfilePage() {
     if (!accessToken) return;
     setProfileLoading(true);
     setProfileMsg('');
+    setProfileMsgOk(false);
     try {
       const payload: any = { nameEn, nameAr, phone, nationality, nationalId };
       if (user?.role === 'PARENT') {
@@ -72,9 +78,11 @@ export default function ProfilePage() {
       await adminApi.updateProfile(payload, accessToken);
       // Refresh user data in store
       initAuth();
-      setProfileMsg('Profile updated successfully.');
+      setProfileMsg(isAr ? 'تم تحديث الملف الشخصي بنجاح.' : 'Profile updated successfully.');
+      setProfileMsgOk(true);
     } catch (err: any) {
-      setProfileMsg(err.message || 'Failed to update profile.');
+      setProfileMsg(err.message || (isAr ? 'فشل تحديث الملف الشخصي.' : 'Failed to update profile.'));
+      setProfileMsgOk(false);
     } finally {
       setProfileLoading(false);
     }
@@ -83,15 +91,16 @@ export default function ProfilePage() {
   const handlePasswordChange = async () => {
     if (!accessToken) return;
     if (newPassword !== confirmPassword) {
-      setPwMsg('New passwords do not match.');
+      setPwMsg(isAr ? 'كلمتا المرور الجديدتان غير متطابقتين.' : 'New passwords do not match.');
       return;
     }
     if (newPassword.length < 8) {
-      setPwMsg('Password must be at least 8 characters.');
+      setPwMsg(isAr ? 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.' : 'Password must be at least 8 characters.');
       return;
     }
     setPwLoading(true);
     setPwMsg('');
+    setPwMsgOk(false);
     try {
       const res = await adminApi.changePassword(accessToken, currentPassword, newPassword);
       // Update tokens in store
@@ -106,9 +115,11 @@ export default function ProfilePage() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setPwMsg('Password changed successfully.');
+      setPwMsg(isAr ? 'تم تغيير كلمة المرور بنجاح.' : 'Password changed successfully.');
+      setPwMsgOk(true);
     } catch (err: any) {
-      setPwMsg(err.message || 'Failed to change password.');
+      setPwMsg(err.message || (isAr ? 'فشل تغيير كلمة المرور.' : 'Failed to change password.'));
+      setPwMsgOk(false);
     } finally {
       setPwLoading(false);
     }
@@ -131,9 +142,20 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
+  const roleLabel = (role: string) => {
+    const labels: Record<string, string> = {
+      SUPER_ADMIN: isAr ? 'مدير عام' : 'Super Admin',
+      ADMIN: isAr ? 'مدير' : 'Admin',
+      EDITOR: isAr ? 'محرر' : 'Editor',
+      PARENT: isAr ? 'ولي أمر' : 'Parent',
+      STUDENT: isAr ? 'طالب' : 'Student',
+    };
+    return labels[role] || role;
+  };
+
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{isAr ? 'الملف الشخصي' : 'Profile'}</h1>
 
       {/* User Info Card */}
       <div className="rounded-xl border border-gray-200 bg-white p-6">
@@ -142,17 +164,17 @@ export default function ProfilePage() {
             {(user.nameEn || '?').charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="text-lg font-semibold text-gray-900">{user.nameEn}</p>
+            <p className="text-lg font-semibold text-gray-900">{isAr ? (user.nameAr || user.nameEn) : user.nameEn}</p>
             <p className="text-sm text-gray-500">{user.email}</p>
             <span className="mt-1 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-              {user.role}
+              {roleLabel(user.role)}
             </span>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Name (English)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'الاسم (بالإنجليزية)' : 'Name (English)'}</label>
             <input
               type="text"
               value={nameEn}
@@ -161,7 +183,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Name (Arabic)</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'الاسم (بالعربية)' : 'Name (Arabic)'}</label>
             <input
               type="text"
               value={nameAr}
@@ -171,7 +193,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'الهاتف' : 'Phone'}</label>
             <input
               type="tel"
               value={phone}
@@ -180,7 +202,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Nationality</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'الجنسية' : 'Nationality'}</label>
             <input
               type="text"
               value={nationality}
@@ -189,7 +211,7 @@ export default function ProfilePage() {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">National ID</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'رقم الهوية' : 'National ID'}</label>
             <input
               type="text"
               value={nationalId}
@@ -200,7 +222,7 @@ export default function ProfilePage() {
         </div>
 
         {profileMsg && (
-          <p className={`mt-4 text-sm ${profileMsg.includes('success') ? 'text-green-600' : 'text-red-500'}`}>
+          <p className={`mt-4 text-sm ${profileMsgOk ? 'text-green-600' : 'text-red-500'}`}>
             {profileMsg}
           </p>
         )}
@@ -211,7 +233,7 @@ export default function ProfilePage() {
           className="mt-6 flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           <Save className="h-4 w-4" />
-          {profileLoading ? 'Saving...' : 'Save Profile'}
+          {profileLoading ? (isAr ? 'جارٍ الحفظ...' : 'Saving...') : (isAr ? 'حفظ الملف الشخصي' : 'Save Profile')}
         </button>
       </div>
 
@@ -219,24 +241,24 @@ export default function ProfilePage() {
       {user.role === 'PARENT' && (
         <div className="rounded-xl border border-gray-200 bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Children</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{isAr ? 'أبنائي' : 'Children'}</h2>
             <button
               onClick={addChild}
               className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700"
             >
-              <Plus className="h-4 w-4" /> Add Child
+              <Plus className="h-4 w-4" /> {isAr ? 'إضافة طفل' : 'Add Child'}
             </button>
           </div>
 
           {children.length === 0 && (
-            <p className="text-sm text-gray-400">No children added yet.</p>
+            <p className="text-sm text-gray-400">{isAr ? 'لم تتم إضافة أي طفل بعد.' : 'No children added yet.'}</p>
           )}
 
           <div className="space-y-6">
             {children.map((child, index) => (
               <div key={index} className="rounded-lg border border-gray-100 bg-gray-50 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Child {index + 1}</span>
+                  <span className="text-sm font-medium text-gray-700">{isAr ? `الطفل ${index + 1}` : `Child ${index + 1}`}</span>
                   <button
                     onClick={() => removeChild(index)}
                     className="rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
@@ -246,7 +268,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Name (English)</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">{isAr ? 'الاسم (بالإنجليزية)' : 'Name (English)'}</label>
                     <input
                       type="text"
                       value={child.nameEn}
@@ -255,7 +277,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Name (Arabic)</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">{isAr ? 'الاسم (بالعربية)' : 'Name (Arabic)'}</label>
                     <input
                       type="text"
                       value={child.nameAr}
@@ -265,7 +287,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Date of Birth</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">{isAr ? 'تاريخ الميلاد' : 'Date of Birth'}</label>
                     <input
                       type="date"
                       value={child.dateOfBirth}
@@ -274,19 +296,19 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Gender</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">{isAr ? 'الجنس' : 'Gender'}</label>
                     <select
                       value={child.gender}
                       onChange={(e) => updateChild(index, 'gender', e.target.value)}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     >
-                      <option value="">Select</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
+                      <option value="">{isAr ? 'اختر' : 'Select'}</option>
+                      <option value="male">{isAr ? 'ذكر' : 'Male'}</option>
+                      <option value="female">{isAr ? 'أنثى' : 'Female'}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Grade</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">{isAr ? 'الصف' : 'Grade'}</label>
                     <input
                       type="text"
                       value={child.grade}
@@ -295,7 +317,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Medical Conditions</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">{isAr ? 'الحالات الصحية' : 'Medical Conditions'}</label>
                     <input
                       type="text"
                       value={child.medicalConditions}
@@ -312,10 +334,10 @@ export default function ProfilePage() {
 
       {/* Change Password */}
       <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Change Password</h2>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">{isAr ? 'تغيير كلمة المرور' : 'Change Password'}</h2>
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Current Password</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'كلمة المرور الحالية' : 'Current Password'}</label>
             <div className="relative">
               <input
                 type={showCurrentPw ? 'text' : 'password'}
@@ -333,7 +355,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">New Password</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'كلمة المرور الجديدة' : 'New Password'}</label>
             <div className="relative">
               <input
                 type={showNewPw ? 'text' : 'password'}
@@ -351,7 +373,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Confirm New Password</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{isAr ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password'}</label>
             <input
               type="password"
               value={confirmPassword}

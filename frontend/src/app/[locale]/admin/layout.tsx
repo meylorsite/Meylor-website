@@ -49,6 +49,33 @@ const studentLinks = [
   { key: 'My Grades', icon: BookOpen, href: '/portal/grades' },
 ];
 
+const NAV_LABELS_AR: Record<string, string> = {
+  'Dashboard': 'لوحة التحكم',
+  'Profile': 'الملف الشخصي',
+  'Settings': 'الإعدادات',
+  'Sections': 'الأقسام',
+  'Programs': 'البرامج',
+  'Facilities': 'المرافق',
+  'Testimonials': 'المراجعات',
+  'News': 'الأخبار',
+  'Gallery': 'المعرض',
+  'Journey': 'رحلتنا',
+  'Pricing': 'الأسعار',
+  'Team': 'الفريق',
+  'Stats': 'الإحصائيات',
+  'Jobs': 'الوظائف',
+  'Applications': 'طلبات التوظيف',
+  'Admissions': 'طلبات القبول',
+  'Contacts': 'الرسائل',
+  'Complaints': 'الشكاوى',
+  'Newsletter': 'النشرة البريدية',
+  'FAQs': 'الأسئلة الشائعة',
+  'Users': 'المستخدمون',
+  'My Portal': 'بوابتي',
+  'My Applications': 'طلباتي',
+  'My Grades': 'درجاتي',
+};
+
 export default function AdminLayout({ children, params: { locale } }: { children: React.ReactNode; params: { locale: string } }) {
   const { user, isLoading, initAuth, logout } = useAuthStore();
   const router = useRouter();
@@ -118,6 +145,8 @@ export default function AdminLayout({ children, params: { locale } }: { children
     return pathname.startsWith(full);
   };
 
+  const navLabel = (key: string) => (isAr ? NAV_LABELS_AR[key] || key : key);
+
   const roleLabel = (role: string) => {
     const labels: Record<string, string> = {
       SUPER_ADMIN: isAr ? 'مدير عام' : 'Super Admin',
@@ -166,7 +195,7 @@ export default function AdminLayout({ children, params: { locale } }: { children
               }`}
             >
               <link.icon className="h-4 w-4 shrink-0" />
-              {link.key}
+              {navLabel(link.key)}
             </Link>
           ))}
         </nav>

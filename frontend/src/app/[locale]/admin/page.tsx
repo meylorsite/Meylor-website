@@ -33,6 +33,23 @@ export default function AdminDashboard() {
     return isAr ? 'مساء الخير' : 'Good Evening';
   };
 
+  const statusLabel = (status: string) => {
+    const labels: Record<string, { ar: string; en: string }> = {
+      open: { ar: 'مفتوحة', en: 'open' },
+      pending: { ar: 'قيد المراجعة', en: 'pending' },
+      in_progress: { ar: 'قيد التنفيذ', en: 'in progress' },
+      reviewed: { ar: 'تمت المراجعة', en: 'reviewed' },
+      resolved: { ar: 'تم الحل', en: 'resolved' },
+      shortlisted: { ar: 'القائمة المختصرة', en: 'shortlisted' },
+      closed: { ar: 'مغلقة', en: 'closed' },
+      rejected: { ar: 'مرفوضة', en: 'rejected' },
+      accepted: { ar: 'مقبولة', en: 'accepted' },
+    };
+    const entry = labels[status];
+    if (!entry) return status;
+    return isAr ? entry.ar : entry.en;
+  };
+
   const statusColor = (status: string) => {
     switch (status) {
       case 'open': case 'pending': return 'bg-amber/10 text-amber';
@@ -99,7 +116,7 @@ export default function AdminDashboard() {
         <div className="relative flex items-center justify-between">
           <div>
             <p className="text-sm text-white/60">{new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <h1 className="mt-1 text-xl font-bold">{greeting()}, {user?.nameEn?.split(' ')[0] || 'Admin'}</h1>
+            <h1 className="mt-1 text-xl font-bold">{greeting()}, {(isAr ? user?.nameAr : user?.nameEn)?.split(' ')[0] || (isAr ? 'المدير' : 'Admin')}</h1>
             <p className="mt-1 text-sm text-white/70">
               {isAr ? 'إليك نظرة عامة على ما يحدث في ميلور' : "Here's an overview of what's happening at MEYLOR"}
             </p>
@@ -227,7 +244,7 @@ export default function AdminDashboard() {
                       <p className="truncate text-xs text-gray-400">{c.category} · {c.priority}</p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusColor(c.status)}`}>
-                      {c.status}
+                      {statusLabel(c.status)}
                     </span>
                   </div>
                 ))}
@@ -267,7 +284,7 @@ export default function AdminDashboard() {
                       </p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusColor(a.status)}`}>
-                      {a.status}
+                      {statusLabel(a.status)}
                     </span>
                   </div>
                 ))}

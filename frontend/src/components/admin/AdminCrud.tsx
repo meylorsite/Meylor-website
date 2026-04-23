@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
 import { adminApi } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -36,6 +37,8 @@ export default function AdminCrud({
   canDelete = true,
   readOnly = false,
 }: AdminCrudProps) {
+  const { locale } = useParams() as { locale: string };
+  const isAr = locale === 'ar';
   const { accessToken } = useAuthStore();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +57,140 @@ export default function AdminCrud({
   const [exportFrom, setExportFrom] = useState('');
   const [exportTo, setExportTo] = useState('');
   const [exporting, setExporting] = useState(false);
+
+  // ---- Arabic label dictionaries ---------------------------------------
+  const LABEL_AR: Record<string, string> = {
+    'Title': 'العنوان',
+    'Name': 'الاسم',
+    'Role': 'الدور',
+    'Role / Position': 'المنصب',
+    'Email': 'البريد الإلكتروني',
+    'Phone': 'الهاتف',
+    'Slug': 'المعرّف (Slug)',
+    'Order': 'الترتيب',
+    'Visible': 'ظاهر',
+    'Active': 'نشط',
+    'Approved': 'معتمد',
+    'Published': 'منشور',
+    'Open': 'مفتوح',
+    'Category': 'التصنيف',
+    'Description': 'الوصف',
+    'Content': 'المحتوى',
+    'Message': 'الرسالة',
+    'Subject': 'الموضوع',
+    'Rating (1-5)': 'التقييم (1-5)',
+    'Image URL': 'رابط الصورة',
+    'Cover Image URL': 'رابط صورة الغلاف',
+    'Avatar URL': 'رابط الصورة الشخصية',
+    'Photo URL': 'رابط الصورة',
+    'Logo URL': 'رابط الشعار',
+    'Icon URL': 'رابط الأيقونة',
+    'Before Image URL': 'رابط الصورة قبل',
+    'After Image URL': 'رابط الصورة بعد',
+    'Date': 'التاريخ',
+    'Date of Birth': 'تاريخ الميلاد',
+    'Gender': 'الجنس',
+    'Grade': 'الصف',
+    'Grade Range': 'نطاق الصفوف',
+    'Age Range': 'الفئة العمرية',
+    'Class Size': 'حجم الفصل',
+    'Curriculum': 'المنهج',
+    'Schedule': 'الجدول الزمني',
+    'Highlights': 'أبرز الملامح',
+    'Extracurriculars': 'الأنشطة اللاصفية',
+    'Features': 'المميزات',
+    'What is Included': 'ما يشمله',
+    'Not Included': 'لا يشمل',
+    'Price': 'السعر',
+    'Currency': 'العملة',
+    'Period': 'المدة',
+    'Popular Badge': 'شارة الأكثر طلباً',
+    'Registration Fee': 'رسوم التسجيل',
+    'Installment Plan': 'خطة التقسيط',
+    'Requirements': 'المتطلبات',
+    'Qualifications': 'المؤهلات',
+    'Benefits': 'المزايا',
+    'Department': 'القسم',
+    'Job Type': 'نوع الوظيفة',
+    'Location': 'الموقع',
+    'Salary Range': 'نطاق الراتب',
+    'Experience Required': 'الخبرة المطلوبة',
+    'Bio': 'نبذة',
+    'Status': 'الحالة',
+    'Priority': 'الأولوية',
+    'Details': 'التفاصيل',
+    'Ticket Number': 'رقم التذكرة',
+    'Admin Notes': 'ملاحظات الإدارة',
+    'Attachment Link': 'رابط المرفق',
+    'Years of Experience': 'سنوات الخبرة',
+    'CV Link': 'رابط السيرة الذاتية',
+    'Photos & Videos': 'الصور والفيديوهات',
+    'Inside School': 'داخل المدرسة',
+    'Parent Name': 'اسم ولي الأمر',
+    'Parent Email': 'بريد ولي الأمر',
+    'Parent Phone': 'هاتف ولي الأمر',
+    'Student Name (EN)': 'اسم الطالب (إنجليزي)',
+    'Student Name (AR)': 'اسم الطالب (عربي)',
+    'Package': 'الباقة',
+    'Previous School': 'المدرسة السابقة',
+    'Medical Conditions': 'الحالات الصحية',
+    'Relationship': 'صلة القرابة',
+    'Nationality': 'الجنسية',
+    'National ID': 'رقم الهوية',
+    'Read': 'مقروء',
+    'Read More': 'اقرأ المزيد',
+    'Question': 'السؤال',
+    'Answer': 'الإجابة',
+    'Current Grade': 'الصف الحالي',
+    'Submitted By (Email)': 'إيميل مقدّم المراجعة',
+    'Name (English)': 'الاسم (إنجليزي)',
+    'Name (Arabic)': 'الاسم (عربي)',
+  };
+
+  const localizeLabel = (label: string): string => {
+    if (!isAr) return label;
+    // Strip bilingual suffix before lookup
+    const base = label.replace(/\s*\((EN|AR)\)\s*$/i, '').trim();
+    const translated = LABEL_AR[base] || LABEL_AR[label];
+    if (!translated) return label;
+    // Re-append suffix if it was stripped
+    const suffixMatch = label.match(/\s*\((EN|AR)\)\s*$/i);
+    if (suffixMatch) {
+      const suffix = suffixMatch[1].toUpperCase();
+      return `${translated} (${suffix === 'EN' ? 'إنجليزي' : 'عربي'})`;
+    }
+    return translated;
+  };
+
+  const TITLE_AR: Record<string, string> = {
+    'Programs': 'البرامج',
+    'News': 'الأخبار',
+    'Gallery Activities': 'أنشطة المعرض',
+    'Testimonials': 'المراجعات',
+    'Facilities': 'المرافق',
+    'Team Members': 'أعضاء الفريق',
+    'Job Posts': 'الوظائف',
+    'Pricing Packages': 'باقات الأسعار',
+    'Sections': 'الأقسام',
+    'FAQs': 'الأسئلة الشائعة',
+    'Stats': 'الإحصائيات',
+    'Journey': 'رحلتنا',
+    'Users': 'المستخدمون',
+    'Contact Messages': 'الرسائل',
+    'Complaint Tickets': 'الشكاوى',
+    'Job Applications': 'طلبات التوظيف',
+    'Admission Applications': 'طلبات القبول',
+    'Newsletter Subscribers': 'المشتركون',
+    'Admissions': 'القبول والتسجيل',
+    'Contacts': 'الرسائل',
+    'Complaints': 'الشكاوى',
+    'Applications': 'طلبات التوظيف',
+    'Newsletter': 'النشرة البريدية',
+    'Journey Items': 'عناصر الرحلة',
+    'Stats Counters': 'عدادات الإحصائيات',
+    'Site Settings': 'إعدادات الموقع',
+  };
+  const localizeTitle = (t: string) => (isAr ? TITLE_AR[t] || t : t);
 
   // Debounce the search input so we don't hit the API on every keystroke.
   useEffect(() => {
@@ -77,11 +214,11 @@ export default function AdminCrud({
       setItems(res.data || []);
       setPagination(res.pagination);
     } catch {
-      toast.error('Failed to load data');
+      toast.error(isAr ? 'فشل تحميل البيانات' : 'Failed to load data');
     } finally {
       setLoading(false);
     }
-  }, [accessToken, resource, page, search, sort]);
+  }, [accessToken, resource, page, search, sort, isAr]);
 
   useEffect(() => {
     fetchData();
@@ -136,15 +273,15 @@ export default function AdminCrud({
     try {
       if (editing) {
         await adminApi.update(resource, editing._id, formData, accessToken);
-        toast.success('Updated successfully');
+        toast.success(isAr ? 'تم التحديث بنجاح' : 'Updated successfully');
       } else {
         await adminApi.create(resource, formData, accessToken);
-        toast.success('Created successfully');
+        toast.success(isAr ? 'تم الإنشاء بنجاح' : 'Created successfully');
       }
       setShowForm(false);
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || 'Save failed');
+      toast.error(err.message || (isAr ? 'فشل الحفظ' : 'Save failed'));
     } finally {
       setSaving(false);
     }
@@ -154,11 +291,11 @@ export default function AdminCrud({
     if (!accessToken) return;
     try {
       await adminApi.remove(resource, id, accessToken);
-      toast.success('Deleted successfully');
+      toast.success(isAr ? 'تم الحذف بنجاح' : 'Deleted successfully');
       setDeleteConfirm(null);
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || 'Delete failed');
+      toast.error(err.message || (isAr ? 'فشل الحذف' : 'Delete failed'));
     }
   };
 
@@ -170,7 +307,7 @@ export default function AdminCrud({
       await adminApi.update(resource, item._id, { [field]: !item[field] }, accessToken);
       fetchData();
     } catch {
-      toast.error('Update failed');
+      toast.error(isAr ? 'فشل التحديث' : 'Update failed');
     }
   };
 
@@ -178,10 +315,14 @@ export default function AdminCrud({
     if (!accessToken) return;
     try {
       await adminApi.update(resource, item._id, { isApproved: !item.isApproved }, accessToken);
-      toast.success(item.isApproved ? 'Approval revoked' : 'Approved — now visible on site');
+      toast.success(
+        item.isApproved
+          ? (isAr ? 'تم إلغاء الموافقة' : 'Approval revoked')
+          : (isAr ? 'تمت الموافقة — ظاهر على الموقع' : 'Approved — now visible on site')
+      );
       fetchData();
     } catch {
-      toast.error('Update failed');
+      toast.error(isAr ? 'فشل التحديث' : 'Update failed');
     }
   };
 
@@ -234,11 +375,12 @@ export default function AdminCrud({
       }
 
       if (rows.length === 0) {
-        toast.error('No records match the selected range');
+        toast.error(isAr ? 'لا توجد سجلات تطابق النطاق المختار' : 'No records match the selected range');
         return;
       }
 
       // Build columns from field definitions + common meta fields
+      // NOTE: CSV column headers stay English for Excel compatibility.
       const columnKeys: string[] = [];
       const columnLabels: string[] = [];
       fields.forEach((f) => {
@@ -278,10 +420,14 @@ export default function AdminCrud({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success(`Exported ${rows.length} record${rows.length === 1 ? '' : 's'}`);
+      toast.success(
+        isAr
+          ? `تم تصدير ${rows.length} سجل`
+          : `Exported ${rows.length} record${rows.length === 1 ? '' : 's'}`
+      );
       setExportOpen(false);
     } catch (e: any) {
-      toast.error(e.message || 'Export failed');
+      toast.error(e.message || (isAr ? 'فشل التصدير' : 'Export failed'));
     } finally {
       setExporting(false);
     }
@@ -293,10 +439,10 @@ export default function AdminCrud({
     if (field.bilingual) {
       return (
         <div key={field.key} className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">{field.label}</label>
+          <label className="text-sm font-medium text-gray-700">{localizeLabel(field.label)}</label>
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
-              <span className="text-xs text-gray-400">English</span>
+              <span className="text-xs text-gray-400">{isAr ? 'إنجليزي' : 'English'}</span>
               {field.type === 'textarea' ? (
                 <textarea
                   value={formData[`${field.key}En`] || ''}
@@ -316,7 +462,7 @@ export default function AdminCrud({
               )}
             </div>
             <div>
-              <span className="text-xs text-gray-400">Arabic</span>
+              <span className="text-xs text-gray-400">{isAr ? 'عربي' : 'Arabic'}</span>
               {field.type === 'textarea' ? (
                 <textarea
                   value={formData[`${field.key}Ar`] || ''}
@@ -371,18 +517,20 @@ export default function AdminCrud({
       return (
         <div key={field.key} className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">{field.label}</label>
+            <label className="text-sm font-medium text-gray-700">{localizeLabel(field.label)}</label>
             <button
               type="button"
               onClick={addMediaItem}
               className="flex items-center gap-1.5 rounded-lg border border-dashed border-accent px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/5"
             >
-              <ImagePlus className="h-3.5 w-3.5" /> Add Photo/Video
+              <ImagePlus className="h-3.5 w-3.5" /> {isAr ? 'إضافة صورة/فيديو' : 'Add Photo/Video'}
             </button>
           </div>
           {mediaItems.length === 0 && (
             <div className="rounded-xl border-2 border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-400">
-              No media items yet. Click &quot;Add Photo/Video&quot; to begin.
+              {isAr
+                ? 'لا توجد عناصر وسائط بعد. اضغط "إضافة صورة/فيديو" للبدء.'
+                : 'No media items yet. Click "Add Photo/Video" to begin.'}
             </div>
           )}
           <div className="space-y-3">
@@ -396,7 +544,7 @@ export default function AdminCrud({
                       onClick={() => moveItem(index, -1)}
                       disabled={index === 0}
                       className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 disabled:opacity-30"
-                      title="Move up"
+                      title={isAr ? 'تحريك لأعلى' : 'Move up'}
                     >
                       <GripVertical className="h-3.5 w-3.5 rotate-180" />
                     </button>
@@ -405,7 +553,7 @@ export default function AdminCrud({
                       onClick={() => moveItem(index, 1)}
                       disabled={index === mediaItems.length - 1}
                       className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 disabled:opacity-30"
-                      title="Move down"
+                      title={isAr ? 'تحريك لأسفل' : 'Move down'}
                     >
                       <GripVertical className="h-3.5 w-3.5" />
                     </button>
@@ -413,7 +561,7 @@ export default function AdminCrud({
                       type="button"
                       onClick={() => removeMediaItem(index)}
                       className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-danger"
-                      title="Remove"
+                      title={isAr ? 'إزالة' : 'Remove'}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -421,62 +569,65 @@ export default function AdminCrud({
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <span className="text-xs text-gray-400">URL</span>
+                    <span className="text-xs text-gray-400">{isAr ? 'الرابط' : 'URL'}</span>
                     <input
                       type="url"
                       value={item.url || ''}
                       onChange={(e) => updateMediaItem(index, 'url', e.target.value)}
                       placeholder="https://..."
                       className="input-field"
+                      dir="ltr"
                     />
                   </div>
                   <div>
-                    <span className="text-xs text-gray-400">Type</span>
+                    <span className="text-xs text-gray-400">{isAr ? 'النوع' : 'Type'}</span>
                     <select
                       value={item.type || 'image'}
                       onChange={(e) => updateMediaItem(index, 'type', e.target.value)}
                       className="input-field"
-                      title="Media type"
+                      title={isAr ? 'النوع' : 'Media type'}
                     >
-                      <option value="image">Image</option>
-                      <option value="video">Video</option>
+                      <option value="image">{isAr ? 'صورة' : 'Image'}</option>
+                      <option value="video">{isAr ? 'فيديو' : 'Video'}</option>
                     </select>
                   </div>
                   <div>
-                    <span className="text-xs text-gray-400">Order</span>
+                    <span className="text-xs text-gray-400">{isAr ? 'الترتيب' : 'Order'}</span>
                     <input
                       type="number"
                       value={item.order ?? index}
                       onChange={(e) => updateMediaItem(index, 'order', parseInt(e.target.value) || 0)}
                       className="input-field"
-                      title="Order"
+                      title={isAr ? 'الترتيب' : 'Order'}
+                      dir="ltr"
                     />
                   </div>
                   <div>
-                    <span className="text-xs text-gray-400">Caption (English)</span>
+                    <span className="text-xs text-gray-400">{isAr ? 'التعليق (إنجليزي)' : 'Caption (English)'}</span>
                     <input
                       type="text"
                       value={item.captionEn || ''}
                       onChange={(e) => updateMediaItem(index, 'captionEn', e.target.value)}
                       className="input-field"
                       dir="ltr"
-                      placeholder="English caption"
+                      placeholder={isAr ? 'تعليق إنجليزي' : 'English caption'}
                     />
                   </div>
                   <div>
-                    <span className="text-xs text-gray-400">Caption (Arabic)</span>
+                    <span className="text-xs text-gray-400">{isAr ? 'التعليق (عربي)' : 'Caption (Arabic)'}</span>
                     <input
                       type="text"
                       value={item.captionAr || ''}
                       onChange={(e) => updateMediaItem(index, 'captionAr', e.target.value)}
                       className="input-field"
                       dir="rtl"
-                      placeholder="Arabic caption"
+                      placeholder={isAr ? 'تعليق عربي' : 'Arabic caption'}
                     />
                   </div>
                 </div>
                 {item.url && item.type === 'image' && (
                   <div className="mt-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={item.url} alt={item.captionEn || 'Preview'} className="h-20 w-20 rounded-lg object-cover" />
                   </div>
                 )}
@@ -489,7 +640,7 @@ export default function AdminCrud({
 
     return (
       <div key={field.key} className="space-y-1">
-        <label className="text-sm font-medium text-gray-700">{field.label}</label>
+        <label className="text-sm font-medium text-gray-700">{localizeLabel(field.label)}</label>
         {field.type === 'textarea' ? (
           <textarea
             value={formData[field.key] || ''}
@@ -503,7 +654,7 @@ export default function AdminCrud({
             onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
             className="input-field"
           >
-            <option value="">Select...</option>
+            <option value="">{isAr ? 'اختر...' : 'Select...'}</option>
             {field.options?.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -516,7 +667,7 @@ export default function AdminCrud({
               onChange={(e) => setFormData({ ...formData, [field.key]: e.target.checked })}
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
-            <span className="text-sm text-gray-600">{field.label}</span>
+            <span className="text-sm text-gray-600">{localizeLabel(field.label)}</span>
           </label>
         ) : field.type === 'number' ? (
           <input
@@ -524,10 +675,27 @@ export default function AdminCrud({
             value={formData[field.key] ?? 0}
             onChange={(e) => setFormData({ ...formData, [field.key]: parseFloat(e.target.value) || 0 })}
             className="input-field"
+            dir="ltr"
+          />
+        ) : field.type === 'url' ? (
+          <input
+            type="url"
+            value={formData[field.key] || ''}
+            onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+            className="input-field"
+            dir="ltr"
+          />
+        ) : field.type === 'date' ? (
+          <input
+            type="date"
+            value={formData[field.key] || ''}
+            onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+            className="input-field"
+            dir="ltr"
           />
         ) : (
           <input
-            type={field.type === 'url' ? 'url' : field.type === 'date' ? 'date' : 'text'}
+            type="text"
             value={formData[field.key] || ''}
             onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
             className="input-field"
@@ -540,23 +708,23 @@ export default function AdminCrud({
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{localizeTitle(title)}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400`} />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={isAr ? 'بحث...' : 'Search...'}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-48 rounded-lg border border-gray-300 py-2 pl-9 pr-8 text-sm focus:border-accent focus:outline-none sm:w-56"
+              className={`w-48 rounded-lg border border-gray-300 py-2 ${isAr ? 'pr-9 pl-8' : 'pl-9 pr-8'} text-sm focus:border-accent focus:outline-none sm:w-56`}
             />
             {searchInput && (
               <button
                 type="button"
                 onClick={() => setSearchInput('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100"
-                title="Clear"
+                className={`absolute ${isAr ? 'left-2' : 'right-2'} top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-gray-100`}
+                title={isAr ? 'مسح' : 'Clear'}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -566,27 +734,27 @@ export default function AdminCrud({
             value={sort}
             onChange={(e) => { setSort(e.target.value); setPage(1); }}
             className="rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-8 text-sm focus:border-accent focus:outline-none"
-            title="Sort"
+            title={isAr ? 'الترتيب' : 'Sort'}
           >
-            <option value="-createdAt">Newest first</option>
-            <option value="createdAt">Oldest first</option>
-            <option value="order">Order (asc)</option>
-            <option value="-order">Order (desc)</option>
-            <option value="nameEn">Name A–Z</option>
-            <option value="-nameEn">Name Z–A</option>
-            <option value="titleEn">Title A–Z</option>
-            <option value="-titleEn">Title Z–A</option>
+            <option value="-createdAt">{isAr ? 'الأحدث أولاً' : 'Newest first'}</option>
+            <option value="createdAt">{isAr ? 'الأقدم أولاً' : 'Oldest first'}</option>
+            <option value="order">{isAr ? 'الترتيب (تصاعدي)' : 'Order (asc)'}</option>
+            <option value="-order">{isAr ? 'الترتيب (تنازلي)' : 'Order (desc)'}</option>
+            <option value="nameEn">{isAr ? 'الاسم أ–ي' : 'Name A–Z'}</option>
+            <option value="-nameEn">{isAr ? 'الاسم ي–أ' : 'Name Z–A'}</option>
+            <option value="titleEn">{isAr ? 'العنوان أ–ي' : 'Title A–Z'}</option>
+            <option value="-titleEn">{isAr ? 'العنوان ي–أ' : 'Title Z–A'}</option>
           </select>
           <button
             type="button"
             onClick={() => setExportOpen(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
           >
-            <Download className="h-4 w-4" /> Export
+            <Download className="h-4 w-4" /> {isAr ? 'تصدير' : 'Export'}
           </button>
           {canCreate && !readOnly && (
             <button onClick={openCreate} className="btn-primary gap-2 text-sm">
-              <Plus className="h-4 w-4" /> Add New
+              <Plus className="h-4 w-4" /> {isAr ? 'إضافة جديد' : 'Add New'}
             </button>
           )}
         </div>
@@ -598,12 +766,12 @@ export default function AdminCrud({
           <thead className="border-b border-gray-100 bg-gray-50">
             <tr>
               {tableFields.map((f) => (
-                <th key={f.key} className="whitespace-nowrap px-4 py-3 text-left font-medium text-gray-500">
-                  {f.label}
+                <th key={f.key} className={`whitespace-nowrap px-4 py-3 ${isAr ? 'text-right' : 'text-left'} font-medium text-gray-500`}>
+                  {localizeLabel(f.label)}
                 </th>
               ))}
-              <th className="sticky right-0 whitespace-nowrap bg-gray-50 px-4 py-3 text-right font-medium text-gray-500">
-                Actions
+              <th className={`sticky ${isAr ? 'left-0' : 'right-0'} whitespace-nowrap bg-gray-50 px-4 py-3 ${isAr ? 'text-left' : 'text-right'} font-medium text-gray-500`}>
+                {isAr ? 'الإجراءات' : 'Actions'}
               </th>
             </tr>
           </thead>
@@ -613,28 +781,34 @@ export default function AdminCrud({
                 <tr key={i}><td colSpan={tableFields.length + 1} className="px-4 py-3"><div className="skeleton h-6 w-full" /></td></tr>
               ))
             ) : items.length === 0 ? (
-              <tr><td colSpan={tableFields.length + 1} className="px-4 py-12 text-center text-gray-400">No items found</td></tr>
+              <tr><td colSpan={tableFields.length + 1} className="px-4 py-12 text-center text-gray-400">{isAr ? 'لا توجد عناصر' : 'No items found'}</td></tr>
             ) : (
               items.map((item) => (
                 <tr key={item._id} className="border-b border-gray-50 hover:bg-gray-50">
                   {tableFields.map((f) => {
                     let display: any = '';
                     if (f.bilingual) {
-                      display = item[`${f.key}En`] || item[`${f.key}Ar`] || '';
+                      display = isAr
+                        ? (item[`${f.key}Ar`] || item[`${f.key}En`] || '')
+                        : (item[`${f.key}En`] || item[`${f.key}Ar`] || '');
                     } else if (f.type === 'boolean') {
                       display = item[f.key] ? '✓' : '✗';
                     } else if (f.type === 'date' || /At$|date$/i.test(f.key)) {
                       const v = item[f.key];
                       if (v) {
                         const d = new Date(v);
-                        display = isNaN(d.getTime()) ? String(v) : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                        display = isNaN(d.getTime())
+                          ? String(v)
+                          : d.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                       }
                     } else {
                       const v = item[f.key];
                       // Auto-detect ISO date strings
                       if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
                         const d = new Date(v);
-                        display = isNaN(d.getTime()) ? v : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                        display = isNaN(d.getTime())
+                          ? v
+                          : d.toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                       } else {
                         display = String(v ?? '');
                       }
@@ -648,12 +822,12 @@ export default function AdminCrud({
                     );
                   })}
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className={`flex items-center ${isAr ? 'justify-start' : 'justify-end'} gap-1`}>
                       <button
                         type="button"
                         onClick={() => setViewing(item)}
                         className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-primary"
-                        title="View details"
+                        title={isAr ? 'عرض التفاصيل' : 'View details'}
                       >
                         <FileText className="h-4 w-4" />
                       </button>
@@ -662,7 +836,9 @@ export default function AdminCrud({
                           type="button"
                           onClick={() => toggleApproval(item)}
                           className={`rounded-lg p-2 ${item.isApproved ? 'text-success hover:bg-success/10' : 'text-amber hover:bg-amber/10'}`}
-                          title={item.isApproved ? 'Approved — click to revoke' : 'Pending — click to approve'}
+                          title={item.isApproved
+                            ? (isAr ? 'معتمد — اضغط للإلغاء' : 'Approved — click to revoke')
+                            : (isAr ? 'قيد المراجعة — اضغط للموافقة' : 'Pending — click to approve')}
                         >
                           <Check className="h-4 w-4" />
                         </button>
@@ -672,7 +848,7 @@ export default function AdminCrud({
                           type="button"
                           onClick={() => toggleVisibility(item)}
                           className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                          title="Toggle visibility"
+                          title={isAr ? 'تبديل الظهور' : 'Toggle visibility'}
                         >
                           {(item.isVisible ?? item.isPublished ?? item.isOpen) ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                         </button>
@@ -681,7 +857,7 @@ export default function AdminCrud({
                         <button
                           onClick={() => openEdit(item)}
                           className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-accent"
-                          title="Edit"
+                          title={isAr ? 'تعديل' : 'Edit'}
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -690,7 +866,7 @@ export default function AdminCrud({
                         <button
                           onClick={() => setDeleteConfirm(item._id)}
                           className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-danger"
-                          title="Delete"
+                          title={isAr ? 'حذف' : 'Delete'}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -707,10 +883,18 @@ export default function AdminCrud({
       {/* Pagination */}
       {pagination && pagination.pages > 1 && (
         <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-          <span>Page {pagination.page} of {pagination.pages} ({pagination.total} total)</span>
+          <span>
+            {isAr
+              ? `صفحة ${pagination.page} من ${pagination.pages} (الإجمالي ${pagination.total})`
+              : `Page ${pagination.page} of ${pagination.pages} (${pagination.total} total)`}
+          </span>
           <div className="flex gap-2">
-            <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="rounded-lg border px-3 py-1 disabled:opacity-50">Prev</button>
-            <button onClick={() => setPage(Math.min(pagination.pages, page + 1))} disabled={page >= pagination.pages} className="rounded-lg border px-3 py-1 disabled:opacity-50">Next</button>
+            <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="rounded-lg border px-3 py-1 disabled:opacity-50">
+              {isAr ? 'السابق' : 'Prev'}
+            </button>
+            <button onClick={() => setPage(Math.min(pagination.pages, page + 1))} disabled={page >= pagination.pages} className="rounded-lg border px-3 py-1 disabled:opacity-50">
+              {isAr ? 'التالي' : 'Next'}
+            </button>
           </div>
         </div>
       )}
@@ -720,7 +904,9 @@ export default function AdminCrud({
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-20">
           <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">{editing ? `Edit ${title}` : `Create ${title}`}</h2>
+              <h2 className="text-lg font-bold text-gray-900">
+                {editing ? (isAr ? 'تعديل' : 'Edit') : (isAr ? 'إضافة' : 'Create')} {localizeTitle(title)}
+              </h2>
               <button onClick={() => setShowForm(false)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100">
                 <X className="h-5 w-5" />
               </button>
@@ -729,10 +915,14 @@ export default function AdminCrud({
               {fields.map(renderFieldInput)}
               <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">
-                  Cancel
+                  {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button type="submit" disabled={saving} className="btn-primary text-sm">
-                  {saving ? 'Saving...' : editing ? 'Update' : 'Create'}
+                  {saving
+                    ? (isAr ? 'جارِ الحفظ...' : 'Saving...')
+                    : editing
+                      ? (isAr ? 'تحديث' : 'Update')
+                      : (isAr ? 'إنشاء' : 'Create')}
                 </button>
               </div>
             </form>
@@ -746,25 +936,32 @@ export default function AdminCrud({
         const labelField = tableFields.find((f) => f.showInTable !== false) || fields[0];
         const entityLabel = target
           ? (labelField?.bilingual
-              ? (target[`${labelField.key}En`] || target[`${labelField.key}Ar`])
-              : target[labelField.key]) || target.name || target.email || target.title || 'this item'
-          : 'this item';
+              ? (isAr
+                  ? (target[`${labelField.key}Ar`] || target[`${labelField.key}En`])
+                  : (target[`${labelField.key}En`] || target[`${labelField.key}Ar`]))
+              : target[labelField.key]) || target.name || target.email || target.title || (isAr ? 'هذا العنصر' : 'this item')
+          : (isAr ? 'هذا العنصر' : 'this item');
         const resourceSingular = title.endsWith('s') ? title.slice(0, -1) : title;
+        const resourceSingularLocalized = localizeTitle(resourceSingular);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
               <Trash2 className="mx-auto mb-4 h-12 w-12 text-danger" />
-              <h3 className="text-lg font-bold text-gray-900">Delete {resourceSingular}?</h3>
+              <h3 className="text-lg font-bold text-gray-900">
+                {isAr ? `حذف ${resourceSingularLocalized}؟` : `Delete ${resourceSingular}?`}
+              </h3>
               <p className="mt-2 text-sm text-gray-600">
                 <span className="font-semibold text-gray-900">&ldquo;{String(entityLabel).slice(0, 60)}&rdquo;</span>
               </p>
-              <p className="mt-1 text-xs text-gray-400">This action cannot be undone.</p>
+              <p className="mt-1 text-xs text-gray-400">
+                {isAr ? 'لا يمكن التراجع عن هذا الإجراء.' : 'This action cannot be undone.'}
+              </p>
               <div className="mt-6 flex gap-3">
                 <button type="button" onClick={() => setDeleteConfirm(null)} className="flex-1 rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50">
-                  Cancel
+                  {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button type="button" onClick={() => handleDelete(deleteConfirm)} className="flex-1 rounded-lg bg-danger py-2 text-sm font-semibold text-white hover:bg-danger/90">
-                  Delete
+                  {isAr ? 'حذف' : 'Delete'}
                 </button>
               </div>
             </div>
@@ -786,12 +983,12 @@ export default function AdminCrud({
             entries.push({ label: f.label, value: viewing[f.key], wide: f.type === 'textarea' });
           }
         });
-        if (viewing.createdAt) entries.push({ label: 'Submitted At', value: viewing.createdAt });
-        if (viewing.updatedAt) entries.push({ label: 'Last Updated', value: viewing.updatedAt });
+        if (viewing.createdAt) entries.push({ label: isAr ? 'تاريخ الإرسال' : 'Submitted At', value: viewing.createdAt });
+        if (viewing.updatedAt) entries.push({ label: isAr ? 'آخر تحديث' : 'Last Updated', value: viewing.updatedAt });
 
         const renderValue = (val: any, field: Field | undefined) => {
           if (val === null || val === undefined || val === '') return <span className="text-gray-300">—</span>;
-          if (typeof val === 'boolean') return <span className={val ? 'text-success' : 'text-gray-400'}>{val ? 'Yes' : 'No'}</span>;
+          if (typeof val === 'boolean') return <span className={val ? 'text-success' : 'text-gray-400'}>{val ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No')}</span>;
           if (Array.isArray(val)) {
             if (field?.type === 'media-gallery') {
               return (
@@ -818,9 +1015,9 @@ export default function AdminCrud({
           const str = String(val);
           if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
             const d = new Date(str);
-            if (!isNaN(d.getTime())) return <span>{d.toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>;
+            if (!isNaN(d.getTime())) return <span>{d.toLocaleString(isAr ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>;
           }
-          if (/^https?:\/\//.test(str)) return <a href={str} target="_blank" rel="noopener noreferrer" className="break-all text-accent hover:underline">{str}</a>;
+          if (/^https?:\/\//.test(str)) return <a href={str} target="_blank" rel="noopener noreferrer" className="break-all text-accent hover:underline" dir="ltr">{str}</a>;
           return <span className="whitespace-pre-wrap">{str}</span>;
         };
 
@@ -829,10 +1026,10 @@ export default function AdminCrud({
             <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
               <div className="flex items-center justify-between border-b border-gray-100 p-5">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Details</h2>
-                  <p className="text-xs text-gray-400">ID: {viewing._id}</p>
+                  <h2 className="text-lg font-bold text-gray-900">{isAr ? 'التفاصيل' : 'Details'}</h2>
+                  <p className="text-xs text-gray-400" dir="ltr">ID: {viewing._id}</p>
                 </div>
-                <button type="button" onClick={() => setViewing(null)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100" title="Close">
+                <button type="button" onClick={() => setViewing(null)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100" title={isAr ? 'إغلاق' : 'Close'}>
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -842,7 +1039,7 @@ export default function AdminCrud({
                     const field = fields.find((f) => f.label === e.label || f.label + ' (EN)' === e.label || f.label + ' (AR)' === e.label);
                     return (
                       <div key={i} className={e.wide ? 'sm:col-span-2' : ''}>
-                        <dt className="text-xs font-semibold uppercase tracking-wider text-gray-400">{e.label}</dt>
+                        <dt className="text-xs font-semibold uppercase tracking-wider text-gray-400">{localizeLabel(e.label)}</dt>
                         <dd className="mt-1 text-sm text-gray-800">{renderValue(e.value, field)}</dd>
                       </div>
                     );
@@ -856,11 +1053,11 @@ export default function AdminCrud({
                     onClick={() => { const item = viewing; setViewing(null); openEdit(item); }}
                     className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
-                    <Pencil className="h-4 w-4" /> Edit
+                    <Pencil className="h-4 w-4" /> {isAr ? 'تعديل' : 'Edit'}
                   </button>
                 )}
                 <button type="button" onClick={() => setViewing(null)} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark">
-                  Close
+                  {isAr ? 'إغلاق' : 'Close'}
                 </button>
               </div>
             </div>
@@ -874,20 +1071,22 @@ export default function AdminCrud({
           <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-100 p-5">
               <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
-                <Download className="h-5 w-5 text-primary" /> Export to CSV
+                <Download className="h-5 w-5 text-primary" /> {isAr ? 'تصدير كـ CSV' : 'Export to CSV'}
               </h2>
-              <button type="button" onClick={() => setExportOpen(false)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100" title="Close">
+              <button type="button" onClick={() => setExportOpen(false)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100" title={isAr ? 'إغلاق' : 'Close'}>
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="space-y-4 p-5">
               <p className="text-xs text-gray-500">
-                Export {title.toLowerCase()} as a CSV file (opens in Excel). Leave dates empty to export everything.
+                {isAr
+                  ? `تصدير ${localizeTitle(title)} كملف CSV (يُفتح في Excel). اترك التواريخ فارغة لتصدير كل السجلات.`
+                  : `Export ${title.toLowerCase()} as a CSV file (opens in Excel). Leave dates empty to export everything.`}
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="export-from" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    <Calendar className="mr-1 inline h-3 w-3" /> From
+                    <Calendar className="mr-1 inline h-3 w-3" /> {isAr ? 'من' : 'From'}
                   </label>
                   <input
                     id="export-from"
@@ -895,11 +1094,12 @@ export default function AdminCrud({
                     value={exportFrom}
                     onChange={(e) => setExportFrom(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                    dir="ltr"
                   />
                 </div>
                 <div>
                   <label htmlFor="export-to" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    <Calendar className="mr-1 inline h-3 w-3" /> To
+                    <Calendar className="mr-1 inline h-3 w-3" /> {isAr ? 'إلى' : 'To'}
                   </label>
                   <input
                     id="export-to"
@@ -907,6 +1107,7 @@ export default function AdminCrud({
                     value={exportTo}
                     onChange={(e) => setExportTo(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                    dir="ltr"
                   />
                 </div>
               </div>
@@ -916,7 +1117,7 @@ export default function AdminCrud({
                   onClick={() => { setExportFrom(''); setExportTo(''); }}
                   className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
                 >
-                  All time
+                  {isAr ? 'كل الفترات' : 'All time'}
                 </button>
                 <button
                   type="button"
@@ -928,7 +1129,7 @@ export default function AdminCrud({
                   }}
                   className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
                 >
-                  This month
+                  {isAr ? 'هذا الشهر' : 'This month'}
                 </button>
                 <button
                   type="button"
@@ -941,13 +1142,13 @@ export default function AdminCrud({
                   }}
                   className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
                 >
-                  Last 30 days
+                  {isAr ? 'آخر 30 يوم' : 'Last 30 days'}
                 </button>
               </div>
             </div>
             <div className="flex items-center justify-end gap-2 border-t border-gray-100 p-4">
               <button type="button" onClick={() => setExportOpen(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Cancel
+                {isAr ? 'إلغاء' : 'Cancel'}
               </button>
               <button
                 type="button"
@@ -956,7 +1157,9 @@ export default function AdminCrud({
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50"
               >
                 <Download className="h-4 w-4" />
-                {exporting ? 'Generating…' : 'Download CSV'}
+                {exporting
+                  ? (isAr ? 'جارِ التوليد…' : 'Generating…')
+                  : (isAr ? 'تنزيل CSV' : 'Download CSV')}
               </button>
             </div>
           </div>
