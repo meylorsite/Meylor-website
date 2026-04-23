@@ -32,11 +32,9 @@ Thumbs.db
 *.swp
 *.swo
 
-# Editor/AI tooling
-.claude/
-.sixth/
-.cursor/
-CLAUDE.md
+# Editor workspace folders
+.cache/
+.local/
 
 # Testing
 coverage/
