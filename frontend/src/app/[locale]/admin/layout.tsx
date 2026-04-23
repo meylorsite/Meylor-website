@@ -283,19 +283,20 @@ export default function AdminLayout({ children, params: { locale } }: { children
       {/* Overlay */}
       {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Main content */}
-      <div className="flex-1 lg:ml-64">
+      {/* Main content — min-w-0 lets the inner table shrink and its own
+          overflow-x-auto take effect instead of pushing the whole layout wide */}
+      <div className="flex min-w-0 flex-1 flex-col lg:ml-64">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
           <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 lg:hidden">
             <Menu className="h-5 w-5" />
           </button>
           <div />
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">{isAr ? user.nameAr : user.nameEn}</span>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{roleLabel(user.role)}</span>
+            <span className="truncate text-sm text-gray-500">{isAr ? user.nameAr : user.nameEn}</span>
+            <span className="whitespace-nowrap rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{roleLabel(user.role)}</span>
           </div>
         </header>
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

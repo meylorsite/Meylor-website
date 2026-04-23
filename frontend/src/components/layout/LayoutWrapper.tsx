@@ -19,10 +19,10 @@ export default function LayoutWrapper({
   }
 
   return (
-    <>
+    <div className="overflow-x-hidden">
       <Header locale={locale} />
       <main className="min-h-screen">{children}</main>
       <Footer locale={locale} />
-    </>
+    </div>
   );
 }

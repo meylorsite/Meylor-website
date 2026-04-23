@@ -724,9 +724,9 @@ export default function AdminCrud({
   };
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">{localizeTitle(title)}</h1>
+        <h1 className="text-xl font-bold text-gray-900 md:text-2xl">{localizeTitle(title)}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className={`absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400`} />
@@ -735,7 +735,7 @@ export default function AdminCrud({
               placeholder={isAr ? 'بحث...' : 'Search...'}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className={`w-48 rounded-lg border border-gray-300 py-2 ${isAr ? 'pr-9 pl-8' : 'pl-9 pr-8'} text-sm focus:border-accent focus:outline-none sm:w-56`}
+              className={`w-full min-w-0 flex-1 rounded-lg border border-gray-300 py-2 ${isAr ? 'pr-9 pl-8' : 'pl-9 pr-8'} text-sm focus:border-accent focus:outline-none sm:w-56 sm:flex-none`}
             />
             {searchInput && (
               <button
