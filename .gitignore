@@ -35,6 +35,9 @@ Thumbs.db
 # Editor workspace folders
 .cache/
 .local/
+.claude/
+.sixth/
+.cursor/
 
 # Testing
 coverage/
