@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth-store';
 import { adminApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff, GripVertical, ImagePlus, Check, FileText, Download, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, X, Eye, EyeOff, GripVertical, ImagePlus, Check, FileText, Download, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface Field {
   key: string;
@@ -263,7 +263,13 @@ export default function AdminCrud({
 
   const openCreate = () => {
     setEditing(null);
-    setFormData(getDefaultFormData());
+    const data = getDefaultFormData();
+    // Auto-assign the next order so admins don't have to guess
+    if ('order' in data) {
+      const maxOrder = items.reduce((m, it) => Math.max(m, Number(it.order) || 0), -1);
+      data.order = maxOrder + 1;
+    }
+    setFormData(data);
     setShowForm(true);
   };
 
@@ -343,6 +349,27 @@ export default function AdminCrud({
       toast.error(isAr ? 'فشل التحديث' : 'Update failed');
     }
   };
+
+  // Swap this item's order with the neighbour in the given direction.
+  const swapOrder = async (item: any, direction: 'up' | 'down') => {
+    if (!accessToken) return;
+    const sortedAsc = [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const idx = sortedAsc.findIndex((it) => it._id === item._id);
+    const neighbour = direction === 'up' ? sortedAsc[idx - 1] : sortedAsc[idx + 1];
+    if (!neighbour) return;
+    try {
+      await Promise.all([
+        adminApi.update(resource, item._id, { order: neighbour.order ?? 0 }, accessToken),
+        adminApi.update(resource, neighbour._id, { order: item.order ?? 0 }, accessToken),
+      ]);
+      fetchData();
+    } catch {
+      toast.error(isAr ? 'فشل إعادة الترتيب' : 'Reorder failed');
+    }
+  };
+
+  // Only show reorder arrows if the resource uses an `order` field.
+  const hasOrderField = fields.some((f) => f.key === 'order');
 
   const formatCellForCSV = (value: any): string => {
     if (value === null || value === undefined) return '';
@@ -866,6 +893,26 @@ export default function AdminCrud({
                   })}
                   <td className="px-4 py-3">
                     <div className={`flex items-center ${isAr ? 'justify-start' : 'justify-end'} gap-1`}>
+                      {hasOrderField && sort === 'order' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => swapOrder(item, 'up')}
+                            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                            title={isAr ? 'تحريك لأعلى' : 'Move up'}
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => swapOrder(item, 'down')}
+                            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                            title={isAr ? 'تحريك لأسفل' : 'Move down'}
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
                       <button
                         type="button"
                         onClick={() => setViewing(item)}
@@ -955,7 +1002,9 @@ export default function AdminCrud({
               </button>
             </div>
             <form onSubmit={handleSave} className="max-h-[60vh] space-y-4 overflow-y-auto pr-2">
-              {fields.map(renderFieldInput)}
+              {/* Hide internal 'order' field — auto-assigned on create,
+                  reorder via up/down arrows in the table instead */}
+              {fields.filter((f) => f.key !== 'order').map(renderFieldInput)}
               <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">
                   {isAr ? 'إلغاء' : 'Cancel'}
