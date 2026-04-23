@@ -41,19 +41,7 @@ router.get(
   })
 );
 
-router.put(
-  '/settings',
-  asyncHandler(async (req: Request, res: Response) => {
-    let settings = await SiteSettings.findOne();
-    if (!settings) {
-      settings = await SiteSettings.create(req.body);
-    } else {
-      Object.assign(settings, req.body);
-      await settings.save();
-    }
-    res.json({ success: true, data: settings });
-  })
-);
+
 
 // ─── Users (SUPER_ADMIN only) ───────────────────────────────────
 router.get('/users', authorize('SUPER_ADMIN'), crud.getAll(User));
@@ -72,21 +60,7 @@ router.post(
 router.put(
   '/users/:id',
   authorize('SUPER_ADMIN'),
-  asyncHandler(async (req: Request, res: Response) => {
-    const user = await User.findById(req.params.id);
-    if (!user) throw new ApiError(404, 'User not found');
-    const { password, ...rest } = req.body;
-    Object.assign(user, rest);
-    if (password && password.length >= 8) {
-      user.password = password;
-    }
-    await user.save();
-    res.json({ success: true, data: user.toJSON() });
-  })
-);
-router.delete('/users/:id', authorize('SUPER_ADMIN'), crud.deleteOne(User));
 
-// ─── Sections ────────────────────────────────────────────────────
 router.get('/sections', crud.getAll(Section));
 router.get('/sections/:id', crud.getOne(Section));
 router.post('/sections', crud.createOne(Section));
@@ -95,27 +69,7 @@ router.delete('/sections/:id', crud.deleteOne(Section));
 router.put('/sections-reorder', crud.reorder(Section));
 
 // ─── Programs ────────────────────────────────────────────────────
-router.get('/programs', crud.getAll(Program));
-router.get('/programs/:id', crud.getOne(Program));
-router.post('/programs', crud.createOne(Program));
-router.put('/programs/:id', crud.updateOne(Program));
-router.delete('/programs/:id', crud.deleteOne(Program));
-router.put('/programs-reorder', crud.reorder(Program));
-
-// ─── Facilities ──────────────────────────────────────────────────
-router.get('/facilities', crud.getAll(Facility));
-router.get('/facilities/:id', crud.getOne(Facility));
-router.post('/facilities', crud.createOne(Facility));
-router.put('/facilities/:id', crud.updateOne(Facility));
-router.delete('/facilities/:id', crud.deleteOne(Facility));
-router.put('/facilities-reorder', crud.reorder(Facility));
-
-// ─── Testimonials ────────────────────────────────────────────────
-router.get('/testimonials', crud.getAll(Testimonial));
-router.get('/testimonials/:id', crud.getOne(Testimonial));
-router.post('/testimonials', crud.createOne(Testimonial));
-router.put('/testimonials/:id', crud.updateOne(Testimonial));
-router.delete('/testimonials/:id', crud.deleteOne(Testimonial));
+router
 router.put('/testimonials-reorder', crud.reorder(Testimonial));
 
 // ─── News Posts ──────────────────────────────────────────────────
@@ -136,15 +90,7 @@ router.put('/gallery-reorder', crud.reorder(GalleryActivity));
 // ─── Journey Items ──────────────────────────────────────────────
 router.get('/journey', crud.getAll(JourneyItem));
 router.get('/journey/:id', crud.getOne(JourneyItem));
-router.post('/journey', crud.createOne(JourneyItem));
-router.put('/journey/:id', crud.updateOne(JourneyItem));
-router.delete('/journey/:id', crud.deleteOne(JourneyItem));
-router.put('/journey-reorder', crud.reorder(JourneyItem));
-
-// ─── Pricing Packages ───────────────────────────────────────────
-router.get('/pricing', crud.getAll(PricingPackage));
-router.get('/pricing/:id', crud.getOne(PricingPackage));
-router.post('/pricing', crud.createOne(PricingPackage));
+router.post
 router.put('/pricing/:id', crud.updateOne(PricingPackage));
 router.delete('/pricing/:id', crud.deleteOne(PricingPackage));
 router.put('/pricing-reorder', crud.reorder(PricingPackage));
@@ -174,25 +120,6 @@ router.get(
 
     res.json({ success: true, data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
   })
-);
-router.get('/applications/:id', crud.getOne(JobApplication));
-router.put('/applications/:id', crud.updateOne(JobApplication));
-router.delete('/applications/:id', crud.deleteOne(JobApplication));
-
-// ─── Admission Applications ─────────────────────────────────────
-router.get('/admissions', crud.getAll(AdmissionApplication, { populate: 'submittedBy packageId' }));
-router.get('/admissions/:id', crud.getOne(AdmissionApplication));
-router.put('/admissions/:id', crud.updateOne(AdmissionApplication));
-router.delete('/admissions/:id', crud.deleteOne(AdmissionApplication));
-
-// ─── Contact Messages ───────────────────────────────────────────
-router.get('/contacts', crud.getAll(ContactMessage));
-router.get('/contacts/:id', crud.getOne(ContactMessage));
-router.put('/contacts/:id', crud.updateOne(ContactMessage));
-router.delete('/contacts/:id', crud.deleteOne(ContactMessage));
-
-// ─── Complaint Tickets ──────────────────────────────────────────
-router.get('/complaints', crud.getAll(ComplaintTicket));
 router.get('/complaints/:id', crud.getOne(ComplaintTicket));
 router.put('/complaints/:id', crud.updateOne(ComplaintTicket));
 router.delete('/complaints/:id', crud.deleteOne(ComplaintTicket));
@@ -234,20 +161,6 @@ router.get(
       unreadContacts,
       totalComplaints,
       openComplaints,
-      totalApplications,
-      pendingApplications,
-      totalAdmissions,
-      pendingAdmissions,
-      totalSubscribers,
-      totalNews,
-      totalJobs,
-      totalPrograms,
-      totalFacilities,
-      totalTestimonials,
-      pendingTestimonials,
-      totalGallery,
-      totalTeam,
-      totalStudents,
       totalParents,
       totalUsers,
       recentContacts,
@@ -266,21 +179,7 @@ router.get(
       AdmissionApplication.countDocuments({ status: 'pending' }),
       NewsletterSubscriber.countDocuments({ isActive: true }),
       NewsPost.countDocuments(),
-      JobPost.countDocuments({ isOpen: true }),
-      Program.countDocuments({ isVisible: true }),
-      Facility.countDocuments({ isVisible: true }),
-      Testimonial.countDocuments({ isApproved: true, isVisible: true }),
-      Testimonial.countDocuments({ isApproved: false }),
-      GalleryActivity.countDocuments({ isVisible: true }),
-      TeamMember.countDocuments({ isVisible: true }),
-      User.countDocuments({ role: 'STUDENT' }),
-      User.countDocuments({ role: 'PARENT' }),
-      User.countDocuments(),
-      ContactMessage.find().sort({ createdAt: -1 }).limit(5).lean(),
-      ComplaintTicket.find().sort({ createdAt: -1 }).limit(5).lean(),
-      JobApplication.find().sort({ createdAt: -1 }).limit(5).populate('jobPost', 'titleEn titleAr').lean(),
-      AdmissionApplication.find().sort({ createdAt: -1 }).limit(5).lean(),
-      NewsPost.find().sort({ publishedAt: -1 }).limit(5).select('titleEn titleAr slug publishedAt imageUrl').lean(),
+blishedAt imageUrl').lean(),
     ]);
 
     res.json({
@@ -290,18 +189,7 @@ router.get(
         unreadContacts,
         totalComplaints,
         openComplaints,
-        totalApplications,
-        pendingApplications,
-        totalAdmissions,
-        pendingAdmissions,
-        totalSubscribers,
-        totalNews,
-        totalJobs,
-        totalPrograms,
-        totalFacilities,
-        totalTestimonials,
-        pendingTestimonials,
-        totalGallery,
+
         totalTeam,
         totalStudents,
         totalParents,
