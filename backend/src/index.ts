@@ -10,10 +10,7 @@ import { connectDB } from './config/db';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import authRoutes from './routes/auth';
-import adminRoutes from './routes/admin';
-import publicRoutes from './routes/public';
-import { errorHandler } from './middleware/errorHandler';
+
 
 const app = express();
 
