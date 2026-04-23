@@ -18,16 +18,6 @@ router.post(
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !(await user.comparePassword(password))) {
-      throw new ApiError(401, 'Invalid email or password');
-    }
-
-    if (!user.isActive) {
-      throw new ApiError(403, 'Account is deactivated');
-    }
-
-    const accessToken = generateAccessToken({ userId: user._id.toString(), role: user.role });
-    const refreshToken = generateRefreshToken({ userId: user._id.toString(), role: user.role });
 
     user.refreshTokens.push(refreshToken);
     // Keep only the last 5 refresh tokens
@@ -62,28 +52,7 @@ router.post(
     }
 
     // Rotate refresh token
-    user.refreshTokens = user.refreshTokens.filter((t) => t !== refreshToken);
-
-    const newAccessToken = generateAccessToken({ userId: user._id.toString(), role: user.role });
-    const newRefreshToken = generateRefreshToken({ userId: user._id.toString(), role: user.role });
-
-    user.refreshTokens.push(newRefreshToken);
-    if (user.refreshTokens.length > 5) {
-      user.refreshTokens = user.refreshTokens.slice(-5);
-    }
-    await user.save();
-
-    res.json({
-      success: true,
-      data: {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      },
-    });
-  })
-);
-
-// Logout
+   
 router.post(
   '/logout',
   authenticate,
@@ -95,42 +64,14 @@ router.post(
       user.refreshTokens = user.refreshTokens.filter((t: string) => t !== refreshToken);
     } else {
       user.refreshTokens = [];
-    }
-    await user.save();
 
-    res.json({ success: true, message: 'Logged out successfully' });
-  })
-);
-
-// Get current user
-router.get(
-  '/me',
-  authenticate,
-  asyncHandler(async (req: Request, res: Response) => {
-    res.json({ success: true, data: req.user.toJSON() });
-  })
-);
-
-// Change password
-router.put(
   '/change-password',
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     const { currentPassword, newPassword } = req.body;
     const user = await User.findById(req.user._id);
 
-    if (!user || !(await user.comparePassword(currentPassword))) {
-      throw new ApiError(400, 'Current password is incorrect');
-    }
 
-    user.password = newPassword;
-    user.refreshTokens = [];
-    await user.save();
-
-    const accessToken = generateAccessToken({ userId: user._id.toString(), role: user.role });
-    const refreshToken = generateRefreshToken({ userId: user._id.toString(), role: user.role });
-    user.refreshTokens.push(refreshToken);
-    await user.save();
 
     res.json({
       success: true,
@@ -154,25 +95,6 @@ router.put(
       }
     }
 
-    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true });
-
-    if (!user) {
-      throw new ApiError(404, 'User not found');
-    }
-
-    res.json({ success: true, data: user.toJSON() });
-  })
-);
-
-// Get my admission applications (for logged-in parent/student)
-router.get(
-  '/my-admissions',
-  authenticate,
-  asyncHandler(async (req: Request, res: Response) => {
-    const user = req.user;
-    const data = await AdmissionApplication.find({
-      $or: [{ submittedBy: user._id }, { parentEmail: user.email }],
-    })
       .sort({ createdAt: -1 })
       .select('-adminNotes')
       .lean();
