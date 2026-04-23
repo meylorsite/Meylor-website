@@ -701,7 +701,7 @@ export default function AdminCrud({
           >
             <option value="">{isAr ? 'اختر...' : 'Select...'}</option>
             {field.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>{localizeLabel(opt.label)}</option>
             ))}
           </select>
         ) : field.type === 'boolean' ? (
