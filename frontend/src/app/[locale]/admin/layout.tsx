@@ -12,41 +12,77 @@ import {
   ClipboardList, BookOpen, Home, HelpCircle
 } from 'lucide-react';
 
-const adminLinks = [
-  { key: 'Dashboard', icon: LayoutDashboard, href: '' },
-  { key: 'Profile', icon: User, href: '/profile' },
-  { key: 'Settings', icon: Settings, href: '/settings' },
-  { key: 'Sections', icon: FileText, href: '/sections' },
-  { key: 'Programs', icon: GraduationCap, href: '/programs' },
-  { key: 'Facilities', icon: Building2, href: '/facilities' },
-  { key: 'Testimonials', icon: MessageSquare, href: '/testimonials' },
-  { key: 'News', icon: Newspaper, href: '/news' },
-  { key: 'Gallery', icon: ImageIcon, href: '/gallery' },
-  { key: 'Journey', icon: Route, href: '/journey' },
-  { key: 'Pricing', icon: DollarSign, href: '/pricing' },
-  { key: 'Team', icon: Users, href: '/team' },
-  { key: 'Stats', icon: BarChart3, href: '/stats' },
-  { key: 'Jobs', icon: Briefcase, href: '/jobs' },
-  { key: 'Applications', icon: Briefcase, href: '/applications' },
-  { key: 'Admissions', icon: ClipboardList, href: '/admissions' },
-  { key: 'Contacts', icon: Mail, href: '/contacts' },
-  { key: 'Complaints', icon: AlertTriangle, href: '/complaints' },
-  { key: 'Newsletter', icon: Newspaper, href: '/newsletter' },
-  { key: 'FAQs', icon: HelpCircle, href: '/faqs' },
-  { key: 'Users', icon: Users, href: '/users' },
+// Admin sidebar is grouped into named sections. Each group renders
+// a small header above its links. Dashboard stays ungrouped on top.
+interface NavLink { key: string; icon: any; href: string; }
+interface NavGroup { key: string; labelAr: string; links: NavLink[]; }
+
+const adminDashboardLink: NavLink = { key: 'Dashboard', icon: LayoutDashboard, href: '' };
+
+const adminGroups: NavGroup[] = [
+  {
+    key: 'Content',
+    labelAr: 'المحتوى',
+    links: [
+      { key: 'Sections', icon: FileText, href: '/sections' },
+      { key: 'Programs', icon: GraduationCap, href: '/programs' },
+      { key: 'News', icon: Newspaper, href: '/news' },
+      { key: 'Gallery', icon: ImageIcon, href: '/gallery' },
+      { key: 'Journey', icon: Route, href: '/journey' },
+      { key: 'Facilities', icon: Building2, href: '/facilities' },
+      { key: 'Team', icon: Users, href: '/team' },
+      { key: 'Testimonials', icon: MessageSquare, href: '/testimonials' },
+      { key: 'FAQs', icon: HelpCircle, href: '/faqs' },
+      { key: 'Stats', icon: BarChart3, href: '/stats' },
+      { key: 'Pricing', icon: DollarSign, href: '/pricing' },
+    ],
+  },
+  {
+    key: 'Admissions & Careers',
+    labelAr: 'القبول والتوظيف',
+    links: [
+      { key: 'Admissions', icon: ClipboardList, href: '/admissions' },
+      { key: 'Jobs', icon: Briefcase, href: '/jobs' },
+      { key: 'Applications', icon: Briefcase, href: '/applications' },
+    ],
+  },
+  {
+    key: 'Messages',
+    labelAr: 'الرسائل',
+    links: [
+      { key: 'Contacts', icon: Mail, href: '/contacts' },
+      { key: 'Complaints', icon: AlertTriangle, href: '/complaints' },
+      { key: 'Newsletter', icon: Newspaper, href: '/newsletter' },
+    ],
+  },
+  {
+    key: 'System',
+    labelAr: 'النظام',
+    links: [
+      { key: 'Users', icon: Users, href: '/users' },
+    ],
+  },
+  {
+    key: 'Account',
+    labelAr: 'الحساب',
+    links: [
+      { key: 'Profile', icon: User, href: '/profile' },
+      { key: 'Settings', icon: Settings, href: '/settings' },
+    ],
+  },
 ];
 
-const parentLinks = [
+const parentLinks: NavLink[] = [
   { key: 'My Portal', icon: Home, href: '/portal' },
-  { key: 'Profile', icon: User, href: '/profile' },
   { key: 'My Applications', icon: ClipboardList, href: '/my-applications' },
   { key: 'Programs', icon: BookOpen, href: '/portal/programs' },
+  { key: 'Profile', icon: User, href: '/profile' },
 ];
 
-const studentLinks = [
+const studentLinks: NavLink[] = [
   { key: 'My Portal', icon: Home, href: '/portal' },
-  { key: 'Profile', icon: User, href: '/profile' },
   { key: 'My Grades', icon: BookOpen, href: '/portal/grades' },
+  { key: 'Profile', icon: User, href: '/profile' },
 ];
 
 const NAV_LABELS_AR: Record<string, string> = {
@@ -128,9 +164,9 @@ export default function AdminLayout({ children, params: { locale } }: { children
   if (!user) return null;
 
   const isParentOrStudent = user.role === 'PARENT' || user.role === 'STUDENT';
-  const sidebarLinks = isParentOrStudent
+  const flatLinks: NavLink[] = isParentOrStudent
     ? (user.role === 'PARENT' ? parentLinks : studentLinks)
-    : adminLinks;
+    : [];
 
   const handleLogout = async () => {
     await logout();
@@ -185,19 +221,56 @@ export default function AdminLayout({ children, params: { locale } }: { children
         </div>
 
         <nav className="h-[calc(100vh-12rem)] overflow-y-auto p-3">
-          {sidebarLinks.map((link) => (
-            <Link
-              key={link.key}
-              href={`/${locale}/admin${link.href}`}
-              onClick={() => setSidebarOpen(false)}
-              className={`mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                isActive(link.href) ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <link.icon className="h-4 w-4 shrink-0" />
-              {navLabel(link.key)}
-            </Link>
-          ))}
+          {isParentOrStudent ? (
+            flatLinks.map((link) => (
+              <Link
+                key={link.key}
+                href={`/${locale}/admin${link.href}`}
+                onClick={() => setSidebarOpen(false)}
+                className={`mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                  isActive(link.href) ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <link.icon className="h-4 w-4 shrink-0" />
+                {navLabel(link.key)}
+              </Link>
+            ))
+          ) : (
+            <>
+              {/* Dashboard (ungrouped, on top) */}
+              <Link
+                href={`/${locale}/admin`}
+                onClick={() => setSidebarOpen(false)}
+                className={`mb-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                  isActive('') ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <adminDashboardLink.icon className="h-4 w-4 shrink-0" />
+                {navLabel(adminDashboardLink.key)}
+              </Link>
+
+              {adminGroups.map((group) => (
+                <div key={group.key} className="mb-3">
+                  <p className="mb-1 px-3 pt-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                    {isAr ? group.labelAr : group.key}
+                  </p>
+                  {group.links.map((link) => (
+                    <Link
+                      key={link.key}
+                      href={`/${locale}/admin${link.href}`}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                        isActive(link.href) ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <link.icon className="h-4 w-4 shrink-0" />
+                      {navLabel(link.key)}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </>
+          )}
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 p-3">

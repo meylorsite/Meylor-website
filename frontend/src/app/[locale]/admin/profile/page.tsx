@@ -384,7 +384,7 @@ export default function ProfilePage() {
         </div>
 
         {pwMsg && (
-          <p className={`mt-4 text-sm ${pwMsg.includes('success') ? 'text-green-600' : 'text-red-500'}`}>
+          <p className={`mt-4 text-sm ${pwMsgOk ? 'text-green-600' : 'text-red-500'}`}>
             {pwMsg}
           </p>
         )}
@@ -394,7 +394,7 @@ export default function ProfilePage() {
           disabled={pwLoading || !currentPassword || !newPassword || !confirmPassword}
           className="mt-6 flex items-center gap-2 rounded-lg bg-gray-800 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-900 disabled:opacity-50"
         >
-          {pwLoading ? 'Changing...' : 'Change Password'}
+          {pwLoading ? (isAr ? 'جارٍ التغيير...' : 'Changing...') : (isAr ? 'تغيير كلمة المرور' : 'Change Password')}
         </button>
       </div>
     </div>

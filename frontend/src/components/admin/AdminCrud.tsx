@@ -201,23 +201,41 @@ export default function AdminCrud({
     return () => clearTimeout(t);
   }, [searchInput]);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const fetchData = useCallback(async () => {
     if (!accessToken) return;
     setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('page', String(page));
-      params.set('limit', '20');
-      params.set('sort', sort);
-      if (search) params.set('search', search);
-      const res = await adminApi.getAll(resource, accessToken, params.toString());
-      setItems(res.data || []);
-      setPagination(res.pagination);
-    } catch {
-      toast.error(isAr ? 'فشل تحميل البيانات' : 'Failed to load data');
-    } finally {
-      setLoading(false);
+    setLoadError(null);
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('limit', '20');
+    params.set('sort', sort);
+    if (search) params.set('search', search);
+
+    // Retry on transient failures (Render free-tier cold starts can take 30-50s
+    // to wake the API, which may error out the first call). 3 tries, 2s gap.
+    let lastErr: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await adminApi.getAll(resource, accessToken, params.toString());
+        setItems(res.data || []);
+        setPagination(res.pagination);
+        setLoadError(null);
+        setLoading(false);
+        return;
+      } catch (err: any) {
+        lastErr = err;
+        const msg = err?.message || '';
+        // Don't retry on auth / client errors
+        if (/401|403|404/.test(msg)) break;
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 2000));
+      }
     }
+
+    const msg = lastErr?.message || '';
+    setLoadError(msg || (isAr ? 'فشل الاتصال بالخادم' : 'Server connection failed'));
+    setLoading(false);
   }, [accessToken, resource, page, search, sort, isAr]);
 
   useEffect(() => {
@@ -780,6 +798,31 @@ export default function AdminCrud({
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}><td colSpan={tableFields.length + 1} className="px-4 py-3"><div className="skeleton h-6 w-full" /></td></tr>
               ))
+            ) : loadError ? (
+              <tr>
+                <td colSpan={tableFields.length + 1} className="px-4 py-16 text-center">
+                  <div className="mx-auto max-w-sm">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-danger/10 text-danger">
+                      <X className="h-6 w-6" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {isAr ? 'تعذّر تحميل البيانات' : 'Could not load data'}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {isAr
+                        ? 'قد يكون الخادم في وضع السكون. انتظر ثوانٍ وأعد المحاولة.'
+                        : 'The server may be waking up. Wait a few seconds and retry.'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => fetchData()}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
+                    >
+                      {isAr ? 'إعادة المحاولة' : 'Retry'}
+                    </button>
+                  </div>
+                </td>
+              </tr>
             ) : items.length === 0 ? (
               <tr><td colSpan={tableFields.length + 1} className="px-4 py-12 text-center text-gray-400">{isAr ? 'لا توجد عناصر' : 'No items found'}</td></tr>
             ) : (
